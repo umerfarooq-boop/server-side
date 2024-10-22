@@ -21,12 +21,24 @@ class CoachController extends Controller
         ],201);
     }
 
+    // get coach Record that can show in About Page
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
         //
+    }
+
+    // Show Coach Record on Home Screen of Website
+    public function coach_record(){
+        $coach = Coach::orderBy('id', 'asc')->limit(6)->get(['name', 'image', 'phone_number', 'coach_location']);
+        return response()->json([
+            "status" => true,
+            "message" => '"Record Get Successfully',
+            "coach" => $coach
+        ]);
     }
 
     /**

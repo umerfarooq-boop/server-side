@@ -70,7 +70,7 @@ class PlayerController extends Controller
         $player->player_location = $request->player_location;
         $player->player_address = $request->player_address;
         $player->status = $request->status;
-        $player->image = $playerimage_name;
+        $player->image = $playerimage_name ?? null;
         $player->save();
 
         return response()->json([

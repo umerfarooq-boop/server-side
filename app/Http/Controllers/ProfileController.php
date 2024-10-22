@@ -280,6 +280,11 @@ class ProfileController extends Controller
         }
         // Save the coach and link it to the profile
         $coach->save();
+        // return response()->json([
+        //     "success" => true,
+        //     "message" => "Coach Created Successfull",
+        //     "coach" => $coach
+        // ],201);
         $newacademy->coach_id = $coach->id;
         $newacademy->save();
         $profile->coach_id = $coach->id;
@@ -343,7 +348,8 @@ class ProfileController extends Controller
         'success' => true,
         'profile' => $profile,
         // 'academy' => $newacademy,
-        // 'coach'   => $coach
+        'coach'   => $profile->coach_id ?? null,
+        'location' => $profile->profile_location ?? null,
     ], 201);
 }
 
