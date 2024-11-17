@@ -9,7 +9,9 @@ use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PlayerParentController;
 use App\Http\Controllers\SportCategoryController;
+use App\Http\Controllers\VedioController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CoachScheduleController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -22,10 +24,20 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/resend-otp',[AuthController::class,'resendOtp']);
 
 // Show coahc_record in front of Website
-
     Route::get('/coach_record',[CoachController::class,'coach_record']);
-
 // Show coahc_record in front of Website
+
+// Show Coach Post in Website
+    Route::get('/showpost',[PostController::class,'showPost']);
+// Show Coach Post in Website
+
+// Show Blog posts of Coach According to its id show in slidder
+    Route::get('/showBlogPost/{id}',[PostController::class,'showBlogPost']);
+// Show Blog posts of Coach According to its id show in slidder
+
+// Get Coach Record
+    // Route::get('/coachschedule',[CoachScheduleController::class,'coachschedule']);
+// Get Coach Record
 
 Route::resources([
     'category' => SportCategoryController::class,
@@ -35,5 +47,7 @@ Route::resources([
     'player_parent' => PlayerParentController::class,
     'profile' => ProfileController::class,
     'posts' => PostController::class,
+    'vedio' => VedioController::class,
+    'coachschedule' => CoachScheduleController::class
 ]);
 

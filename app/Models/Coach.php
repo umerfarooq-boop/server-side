@@ -20,6 +20,10 @@ class Coach extends Model
         'status',
     ];
 
+    public function post(){
+        return $this->hasMany(Post::class,'coach_id','id');
+    }
+
     public function sportCategory(){
         return $this->belongsTo(SportCategory::class,'category_id');
     }

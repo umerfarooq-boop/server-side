@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\Coach;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
-
+// use pagination;
 class PostController extends Controller
 {
     /**
@@ -13,8 +15,32 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        // $post = Post::all();
     }
+
+    // show Post Record on Website
+
+    public function showPost()
+    {
+        $post = Post::with('coach')
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('posts')
+                    ->groupBy('coach_id');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(2); // Correctly chain the paginate() method here
+    
+        return response()->json([
+            "success" => true,
+            "message" => "Record Get Successfully",
+            "post" => $post
+        ]);
+    }
+    
+
+
+    // show Post Record on Website
 
     /**
      * Show the form for creating a new resource.
@@ -77,7 +103,25 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        //
+        
+    }
+
+    public function showBlogPost($id){
+
+        $post = Post::with('coach')->where('coach_id', $id)->orderBy('id', 'desc')->get();
+    
+        if ($post->isEmpty()) {
+            return response()->json([
+                "success" => false,
+                "message" => "No posts found for this coach."
+            ], 404);
+        }
+
+        return response()->json([
+            "success" => true,
+            "message" => "Records fetched successfully",
+            "post" => $post
+        ], 200);
     }
 
     /**

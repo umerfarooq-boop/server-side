@@ -21,4 +21,8 @@ protected $fillable = [
     'coach_id',
 ];
 
+    public function coach(){
+        return $this->belongsTo(Coach::class,'coach_id');
+    }
+
 }
