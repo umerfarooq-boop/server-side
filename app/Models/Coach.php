@@ -36,4 +36,10 @@ class Coach extends Model
         return $this->belongsTo(Academy::class,'coach_id');
     }
 
+    public function singleAcademy()
+    {
+        return $this->hasOne(Academy::class, 'coach_id', 'id');
+    }
+
+
 }

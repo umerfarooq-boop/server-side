@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Coach;
 use Illuminate\Http\Request;
 use App\Models\SportCategory;
+use App\Models\Academy;
 use Illuminate\Support\Facades\Validator;
 
 class CoachController extends Controller
@@ -14,10 +15,11 @@ class CoachController extends Controller
      */
     public function index()
     {
-        $sport = Coach::with('sportCategory')->get();
+        $sport = Coach::with('sportCategory')->orderBy('id','desc')->get();
         return response()->json([
             'success' => true,
-            'message' => 'Record Found Successfully'
+            'message' => 'Record Found Successfully',
+            'coach' => $sport
         ],201);
     }
 
@@ -38,6 +40,29 @@ class CoachController extends Controller
             "status" => true,
             "message" => '"Record Get Successfully',
             "coach" => $coach
+        ]);
+    }
+
+    public function DownloadFile($path,$filename)
+    {
+        $file = public_path("uploads/{$path}/{$filename}");
+        if (file_exists($file)) {
+            return response()->download($file);
+        }
+        return response()->json(['error' => 'File not found.'], 404);
+    }
+    
+    public function changeStatus($id){
+        $coach = Coach::find($id);
+        if($coach->status == 'acitve'){
+            $coach->status = 'block';
+        }else{
+            $coach->status = 'block';
+        }
+        $coach->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'Status Updated Successfully'
         ]);
     }
 
@@ -106,8 +131,16 @@ class CoachController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $coach_record = Coach::with(['sportCategory', 'singleAcademy'])
+            ->where('id', $id)
+            ->get();
+
+        return response()->json([
+            'message' => 'Record Get Successfully',
+            'coach_record' => $coach_record,
+        ], 201);
     }
+
 
     /**
      * Show the form for editing the specified resource.

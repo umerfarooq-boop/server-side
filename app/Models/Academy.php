@@ -29,4 +29,10 @@ class Academy extends Model
         return $this->hasMany(Coach::class,'coach_id','id');
     }
 
+    public function singleCoach()
+    {
+        return $this->belongsTo(Coach::class, 'coach_id', 'id');
+    }
+
+
 }

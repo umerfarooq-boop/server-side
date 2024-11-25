@@ -39,6 +39,14 @@ Route::post('/resend-otp',[AuthController::class,'resendOtp']);
     // Route::get('/coachschedule',[CoachScheduleController::class,'coachschedule']);
 // Get Coach Record
 
+// Download File
+Route::get('/DownloadFile/{path}/{filename}', [CoachController::class, 'DownloadFile']);
+// Download File
+
+// Change Account Status
+Route::get('/changeStatus/{id}',[CoachController::class,'changeStatus']);
+// Change Account Status
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,

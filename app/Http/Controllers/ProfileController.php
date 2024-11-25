@@ -199,159 +199,164 @@ class ProfileController extends Controller
     // }
 
     public function store(Request $request)
-{
-    // Validate common fields for all roles
-    $request->validate([
-        'dob' => 'required|date',
-        'gender' => 'required|string',
-        'role' => 'required|string',
-        'profile_location' => 'required|string',
-        'address' => 'required|string',
-    ]);
-
-    // Create a profile record
-    $profile = new Profile();
-    $profile->dob = $request->dob;
-    $profile->gender = $request->gender;
-    $profile->role = $request->role;
-    $profile->profile_location = $request->profile_location;
-    $profile->address = $request->address;
-    $profile->save();
-
-    // If the role is 'coach' and they have an academy
-    if ($request->role === 'coach') {
+    {
+        // Validate common fields for all roles
         $request->validate([
-            'name' => 'required|string',
-            'category_id' => 'required|integer',
-            'experience' => 'required|string',
-            'level' => 'required|string',
-            'phone_number' => 'required|string',
-            'coach_location' => 'required'
+            'dob' => 'required|date',
+            'gender' => 'required|string',
+            'role' => 'required|string',
+            'profile_location' => 'required|string',
+            'address' => 'required|string',
         ]);
 
-        // Handling image upload for coach image
-        $coachimage = $request->file('image');
-        $cimageextension = $coachimage->getClientOriginalExtension();
-        $cimagename = time() . '.' . $cimageextension;
-        $coachimage->move(public_path('uploads/coach_image'), $cimagename);
+        // Create a profile record
+        $profile = new Profile();
+        $profile->dob = $request->dob;
+        $profile->gender = $request->gender;
+        $profile->role = $request->role;
+        $profile->profile_location = $request->profile_location;
+        $profile->address = $request->address;
+        $profile->save();
 
-        // Handling file upload for coach certificate
-        $coachcertificate = $request->file('certificate');
-        $ccertificateeextension = $coachcertificate->getClientOriginalExtension();
-        $ccertificatename = time() . '.' . $ccertificateeextension;
-        $coachcertificate->move(public_path('uploads/coach_certificate'), $ccertificatename);
-
-        // Create a new coach record
-        $coach = new Coach();
-        $coach->name = $request->name;
-        $coach->category_id = $request->category_id;
-        $coach->experience = $request->experience;
-        $coach->level = $request->level;
-        $coach->phone_number = $request->phone_number;
-        $coach->coach_location = $request->coach_location;
-        $coach->image = $cimagename; // Store the image name in the database
-        $coach->certificate = $ccertificatename; // Store the certificate name in the database
-        // $coach->save();
-
-
-        if ($request->hasAccademy === 'yes') {
-            // Validate and store academy-specific fields
+        // If the role is 'coach' and they have an academy
+        if ($request->role === 'coach') {
             $request->validate([
-                'academy_name' => 'required|string',
-                'academy_certificate' => 'required',
-                'academy_location' => 'required|string',
-                'address' => 'required|string',
-                'academy_phonenumber' => 'required|string',
+                'name' => 'required|string',
+                'category_id' => 'required|integer',
+                'experience' => 'required|string',
+                'level' => 'required|string',
+                'phone_number' => 'required|string',
+                'coach_location' => 'required'
             ]);
 
-            $academyCertificate = $request->file('academy_certificate');
-            $ext = $academyCertificate->getClientOriginalExtension();
-            $academyCertificateName = time() . '.' . $ext;
-            $academyCertificate->move(public_path('uploads/academy_certificate'), $academyCertificateName);
+            // Handling image upload for coach image
+            $coachimage = $request->file('image');
+            $cimageextension = $coachimage->getClientOriginalExtension();
+            $cimagename = time() . '.' . $cimageextension;
+            $coachimage->move(public_path('uploads/coach_image'), $cimagename);
 
-            $newacademy = new Academy();
-            $newacademy->academy_name = $request->academy_name;
-            $newacademy->academy_location = $request->academy_location;
-            $newacademy->address = $request->address;
-            $newacademy->academy_phonenumber = $request->academy_phonenumber;
-            $newacademy->academy_certificate = $academyCertificateName;
+            // Handling file upload for coach certificate
+            $coachcertificate = $request->file('certificate');
+            if ($coachcertificate->getClientOriginalExtension() !== 'pdf') {
+                return back()->withErrors(['certificate' => 'The file must be a PDF.']);
+            }        
+            $ccertificateeextension = $coachcertificate->getClientOriginalExtension();
+            $ccertificatename = time() . '.' . $ccertificateeextension;
+            $coachcertificate->move(public_path('uploads/coach_certificate'), $ccertificatename);
+
+            // Create a new coach record
+            $coach = new Coach();
+            $coach->name = $request->name;
+            $coach->category_id = $request->category_id;
+            $coach->experience = $request->experience;
+            $coach->level = $request->level;
+            $coach->phone_number = $request->phone_number;
+            $coach->coach_location = $request->coach_location;
+            $coach->image = $cimagename; // Store the image name in the database
+            $coach->certificate = $ccertificatename; // Store the certificate name in the database
+            // $coach->save();
+
+
+            if ($request->hasAccademy === 'yes') {
+                // Validate and store academy-specific fields
+                $request->validate([
+                    'academy_name' => 'required|string',
+                    'academy_certificate' => 'required',
+                    'academy_location' => 'required|string',
+                    'address' => 'required|string',
+                    'academy_phonenumber' => 'required|string',
+                ]);
+
+                $academyCertificate = $request->file('academy_certificate');
+                if ($academyCertificate->getClientOriginalExtension() !== 'pdf') {
+                    return back()->withErrors(['academy_certificate' => 'The file must be a PDF.']);
+                }
+                $academyCertificateName = time() . '.' . $academyCertificate->getClientOriginalExtension();
+                $academyCertificate->move(public_path('uploads/academy_certificate'), $academyCertificateName);
+
+                $newacademy = new Academy();
+                $newacademy->academy_name = $request->academy_name;
+                $newacademy->academy_location = $request->academy_location;
+                $newacademy->address = $request->address;
+                $newacademy->academy_phonenumber = $request->academy_phonenumber;
+                $newacademy->academy_certificate = $academyCertificateName;
+                $newacademy->save();
+                $profile->academy_id = $newacademy->id;
+            }
+            // Save the coach and link it to the profile
+            $coach->save();
+            // return response()->json([
+            //     "success" => true,
+            //     "message" => "Coach Created Successfull",
+            //     "coach" => $coach
+            // ],201);
+            $newacademy->coach_id = $coach->id;
             $newacademy->save();
-            $profile->academy_id = $newacademy->id;
+            $profile->coach_id = $coach->id;
+
         }
-        // Save the coach and link it to the profile
-        $coach->save();
-        // return response()->json([
-        //     "success" => true,
-        //     "message" => "Coach Created Successfull",
-        //     "coach" => $coach
-        // ],201);
-        $newacademy->coach_id = $coach->id;
-        $newacademy->save();
-        $profile->coach_id = $coach->id;
 
+        // If the role is 'player'
+        if ($request->role === 'player') {
+            $request->validate([
+                'player_name' => 'required|string',
+                'cat_id' => 'required|integer',
+                'playwith' => 'required|string',
+                'player_gender' => 'required|string',
+                'player_phonenumber' => 'required|string',
+                'player_location' => 'required|string',
+                'player_address' => 'required|string',
+                'player_dob' => 'required|date',
+                // 'status' => 'required|string',
+            ]);
+
+            // Create a new player record
+            $player = new Player();
+            $player->player_name = $request->player_name;
+            $player->cat_id = $request->cat_id;
+            $player->playwith = $request->playwith;
+            $player->player_gender = $request->player_gender;
+            $player->player_phonenumber = $request->player_phonenumber;
+            $player->player_dob = $request->player_dob;
+            $player->player_location = $request->player_location;
+            $player->player_address = $request->player_address;
+
+
+            $playerimage = $request->file('image');
+            $playerext = $playerimage->getClientOriginalName();
+            $playerimageName = time().'.'.$playerext;
+            $playerimage->move(public_path('uploads/player_image'),$playerimageName);
+    
+            // Save the player and link it to the profile
+            $player->image = $playerimageName;
+            $player->save();
+            $profile->player_id = $player->id;
+
+            $parent = new PlayerParent();
+            $parent->cnic = $request->cnic;
+            $parent->name = $request->name;
+            $parent->address = $request->address;
+            $parent->player_id = $player->id;
+            $parent->phone_number = $request->phone_number;
+            $parent->location = $request->location;
+            // $parent->status = $request->status;
+            $parent->save();
+
+            $profile->parent_id = $parent->id;
+        }
+
+        // Save the profile with associated player or coach IDs
+        $profile->save();
+
+        return response()->json([
+            'message' => 'Profile created successfully!',
+            'success' => true,
+            'profile' => $profile,
+            // 'academy' => $newacademy,
+            'coach'   => $profile->coach_id ?? null,
+            'location' => $profile->profile_location ?? null,
+        ], 201);
     }
-
-    // If the role is 'player'
-    if ($request->role === 'player') {
-        $request->validate([
-            'player_name' => 'required|string',
-            'cat_id' => 'required|integer',
-            'playwith' => 'required|string',
-            'player_gender' => 'required|string',
-            'player_phonenumber' => 'required|string',
-            'player_location' => 'required|string',
-            'player_address' => 'required|string',
-            'player_dob' => 'required|date',
-            // 'status' => 'required|string',
-        ]);
-
-        // Create a new player record
-        $player = new Player();
-        $player->player_name = $request->player_name;
-        $player->cat_id = $request->cat_id;
-        $player->playwith = $request->playwith;
-        $player->player_gender = $request->player_gender;
-        $player->player_phonenumber = $request->player_phonenumber;
-        $player->player_dob = $request->player_dob;
-        $player->player_location = $request->player_location;
-        $player->player_address = $request->player_address;
-
-
-        $playerimage = $request->file('image');
-        $playerext = $playerimage->getClientOriginalName();
-        $playerimageName = time().'.'.$playerext;
-        $playerimage->move(public_path('uploads/player_image'),$playerimageName);
- 
-        // Save the player and link it to the profile
-        $player->image = $playerimageName;
-        $player->save();
-        $profile->player_id = $player->id;
-
-        $parent = new PlayerParent();
-        $parent->cnic = $request->cnic;
-        $parent->name = $request->name;
-        $parent->address = $request->address;
-        $parent->player_id = $player->id;
-        $parent->phone_number = $request->phone_number;
-        $parent->location = $request->location;
-        // $parent->status = $request->status;
-        $parent->save();
-
-        $profile->parent_id = $parent->id;
-    }
-
-    // Save the profile with associated player or coach IDs
-    $profile->save();
-
-    return response()->json([
-        'message' => 'Profile created successfully!',
-        'success' => true,
-        'profile' => $profile,
-        // 'academy' => $newacademy,
-        'coach'   => $profile->coach_id ?? null,
-        'location' => $profile->profile_location ?? null,
-    ], 201);
-}
 
 
 
