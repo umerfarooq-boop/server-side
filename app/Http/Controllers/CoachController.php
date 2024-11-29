@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Coach;
+use App\Models\Academy;
 use Illuminate\Http\Request;
 use App\Models\SportCategory;
-use App\Models\Academy;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class CoachController extends Controller
@@ -155,8 +156,130 @@ class CoachController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+       
     }
+
+    public function updateRecord(Request $request, string $id)
+{
+    // Fetch coach and academy details using join
+    $coach_detail = DB::table('coaches')
+        ->join('academies', 'coaches.id', '=', 'academies.coach_id')
+        ->where('coaches.id', $id)
+        ->select('coaches.*', 'academies.*')
+        ->first();
+
+    if (!$coach_detail) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Coach not found.',
+        ], 404);
+    }
+
+    // Validate inputs for coach and academy
+    $validation = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'experience' => 'required|string|max:255',
+        'level' => 'required|string|max:50',
+        'phone_number' => 'required|string|max:15',
+        'coach_location' => 'required|string|max:255',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'certificate' => 'nullable|mimes:pdf|max:2048', // Ensure certificate is a PDF
+        'academy_name' => 'required|string|max:255',
+        'academy_location' => 'required|string|max:255',
+        'address' => 'required|string|max:255',
+        'academy_phonenumber' => 'required|string|max:15',
+        'academy_certificate' => 'nullable|mimes:pdf|max:2048', // Ensure academy certificate is a PDF
+    ]);
+
+    if ($validation->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation errors',
+            'errors' => $validation->errors(),
+        ], 422);
+    }
+
+    // Update Coach details
+    $coach = Coach::find($id);
+    if (!$coach) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Coach not found.',
+        ], 404);
+    }
+
+    $coach->name = $request->name;
+    $coach->experience = $request->experience;
+    $coach->level = $request->level;
+    $coach->phone_number = $request->phone_number;
+    $coach->coach_location = $request->coach_location;
+
+    // Handle optional file uploads for coach
+    if ($request->hasFile('image')) {
+        $coachImage = $request->file('image');
+        $coachImageName = time() . '.' . $coachImage->getClientOriginalExtension();
+        $coachImage->move(public_path('uploads/coach_image'), $coachImageName);
+        $coach->image = $coachImageName;
+    }
+
+    if ($request->hasFile('certificate')) {
+        $coachCertificate = $request->file('certificate');
+        if ($coachCertificate->getClientOriginalExtension() !== 'pdf') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Coach certificate must be a PDF.',
+            ], 422);
+        }
+        $coachCertificateName = time() . '.' . $coachCertificate->getClientOriginalExtension();
+        $coachCertificate->move(public_path('uploads/coach_certificate'), $coachCertificateName);
+        $coach->certificate = $coachCertificateName;
+    }
+
+    $coach->save();
+
+    // Update Academy details
+    $academy = Academy::where('coach_id', $id)->first();
+    if (!$academy) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Academy not found.',
+        ], 404);
+    }
+
+    $academy->academy_name = $request->academy_name;
+    $academy->academy_location = $request->academy_location;
+    $academy->address = $request->address;
+    $academy->academy_phonenumber = $request->academy_phonenumber;
+
+    // Handle optional file uploads for academy
+    if ($request->hasFile('academy_certificate')) {
+        $academyCertificate = $request->file('academy_certificate');
+        if ($academyCertificate->getClientOriginalExtension() !== 'pdf') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Academy certificate must be a PDF.',
+            ], 422);
+        }
+        $academyCertificateName = time() . '.' . $academyCertificate->getClientOriginalExtension();
+        $academyCertificate->move(public_path('uploads/academy_certificate'), $academyCertificateName);
+        $academy->academy_certificate = $academyCertificateName;
+    }
+
+    $academy->save();
+
+    // Return success response with updated details
+    return response()->json([
+        'success' => true,
+        'message' => 'Records updated successfully',
+        'coach' => $coach,
+        'academy' => $academy,
+        'coach_image_path' => isset($coachImageName) ? asset('uploads/coach_image/' . $coachImageName) : null,
+        'certificate_path' => isset($coachCertificateName) ? asset('uploads/coach_certificate/' . $coachCertificateName) : null,
+        'academy_certificate_path' => isset($academyCertificateName) ? asset('uploads/academy_certificate/' . $academyCertificateName) : null,
+    ], 200);
+}
+
+
 
     /**
      * Remove the specified resource from storage.
