@@ -15,7 +15,12 @@ class PostController extends Controller
      */
     public function index()
     {
-        // $post = Post::all();
+        $post = Post::with('coach')->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'Message Get Sucessfully',
+            'post' => $post
+        ],201);
     }
 
     // show Post Record on Website
@@ -48,6 +53,28 @@ class PostController extends Controller
     public function create()
     {
         //
+    }
+
+    public function changePostStatus($id)
+    {
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Post not found',
+            ], 404);
+        }
+
+        // Toggle the status
+        $post->post_status = $post->post_status === 'active' ? 'block' : 'active';
+        $post->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Status Updated Successfully',
+            'post' => $post,
+        ], 201);
     }
 
     /**

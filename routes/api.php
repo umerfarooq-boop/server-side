@@ -47,6 +47,10 @@ Route::get('/DownloadFile/{path}/{filename}', [CoachController::class, 'Download
 Route::get('/changeStatus/{id}',[CoachController::class,'changeStatus']);
 // Change Account Status
 
+// Change Post Status
+Route::get('/changePostStatus/{id}',[PostController::class,'changePostStatus']);
+// Change Post Status
+
 // Update the Record
 Route::post('/updateRecord/{id}',[CoachController::class,'updateRecord']);
 // Update the Record
