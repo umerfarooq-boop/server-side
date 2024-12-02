@@ -130,7 +130,20 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        
+        $post = Post::with('coach')->where('id',$id)->get();
+        if($post->isNotEmpty()){
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully Get Data',
+                'post'    => $post
+            ],201);
+        }else{
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Not Found',
+                'error' => 'Data Not Found According to this ID'
+            ],404);
+        }
     }
 
     public function showBlogPost($id){
