@@ -177,7 +177,12 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $post = Post::with('coach')->where('coach_id',$id)->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Get Successfully',
+            'post'    => $post
+        ],201);
     }
 
     /**
