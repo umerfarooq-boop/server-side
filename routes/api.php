@@ -35,6 +35,10 @@ Route::post('/resend-otp',[AuthController::class,'resendOtp']);
     Route::get('/showBlogPost/{id}',[PostController::class,'showBlogPost']);
 // Show Blog posts of Coach According to its id show in slidder
 
+// Update Post
+    Route::post('/updatePost/{id}',[PostController::class,'updatePost']);
+// Update Post
+
 // Get Coach Record
     // Route::get('/coachschedule',[CoachScheduleController::class,'coachschedule']);
 // Get Coach Record
