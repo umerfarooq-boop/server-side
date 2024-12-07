@@ -3,15 +3,19 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\CoachController;
+use App\Http\Controllers\VedioController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\HomeServiceController;
+use App\Http\Controllers\HomeSlidderController;
 use App\Http\Controllers\PlayerParentController;
-use App\Http\Controllers\SportCategoryController;
-use App\Http\Controllers\VedioController;
-use App\Http\Controllers\PostController;
 use App\Http\Controllers\CoachScheduleController;
+use App\Http\Controllers\SportCategoryController;
+use App\Http\Controllers\FeatureServiceController;
+use App\Http\Controllers\FrequentlyQuestionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -68,6 +72,10 @@ Route::resources([
     'profile' => ProfileController::class,
     'posts' => PostController::class,
     'vedio' => VedioController::class,
-    'coachschedule' => CoachScheduleController::class
+    'coachschedule' => CoachScheduleController::class,
+    'homeslidder' => HomeSlidderController::class,
+    'homeservice' => HomeServiceController::class,
+    'featureservice' => FeatureServiceController::class,
+    'frequentlyquestion' => FrequentlyQuestionController::class,
 ]);
 
