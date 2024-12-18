@@ -13,7 +13,12 @@ class FeatureServiceController extends Controller
      */
     public function index()
     {
-        //
+        $service = FeatureService::all();
+        return response()->json([
+            'status' => true,
+            'message' => 'Record Get Successfully',
+            'feature_service' => $service
+        ],201);
     }
 
     /**
@@ -61,13 +66,91 @@ class FeatureServiceController extends Controller
         ],201);
     }
 
+    public function AboutServiceStatus($id){
+        $service = FeatureService::find($id);
+        if($service->status == 'active'){
+            $service->status = 'block';
+        }else{
+            $service->status = 'active';
+        }
+        $service->save();
+        return response()->json([
+            'status'  => true,
+            'message' => 'Status Updated Successfully',
+            'about_srvice' => $service
+        ],201);
+    }
+
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        //
+        $feature_service = FeatureService::find($id);
+        return response()->json([
+            'status'   => true,
+            'message'  => 'Successfully Get Successfully',
+            'feature_service'  => $feature_service,
+        ],201);
     }
+
+    public function UpdateFeatureService(Request $request, $id)
+{
+    // Retrieve the existing record
+    $updateService = FeatureService::find($id);
+
+    if (!$updateService) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Service not found',
+        ], 404);
+    }
+
+    // Validate request data
+    $validation = Validator::make($request->all(), [
+        'title' => 'required',
+        'description' => 'required',
+        'image' => 'nullable|image|max:2048', // Image is optional and must be valid
+    ]);
+
+    if ($validation->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Validation errors',
+            'errors' => $validation->errors(),
+        ], 422);
+    }
+
+    // Handle the image upload
+    if ($request->hasFile('image')) {
+        $feature_service_image = $request->file('image');
+        $ext = $feature_service_image->getClientOriginalExtension();
+
+        // Delete the old image if it exists
+        $oldImagePath = public_path('uploads/feature_service/' . $updateService->image);
+        if ($updateService->image && file_exists($oldImagePath)) {
+            unlink($oldImagePath);
+        }
+
+        // Save the new image
+        $feature_service_image_name = time() . '.' . $ext;
+        $feature_service_image->move(public_path('uploads/feature_service'), $feature_service_image_name);
+
+        $updateService->image = $feature_service_image_name;
+    }
+
+    // Update the service details
+    $updateService->title = $request->title;
+    $updateService->description = $request->description;
+    $updateService->save();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Service updated successfully',
+        'service' => $updateService,
+    ], 200);
+}
+
 
     /**
      * Show the form for editing the specified resource.

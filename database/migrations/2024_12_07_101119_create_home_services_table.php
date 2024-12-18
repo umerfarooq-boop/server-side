@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('service_image');
             $table->string('service_text');
-            $table->string('stauts')->default('active');
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }

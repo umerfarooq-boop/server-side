@@ -63,6 +63,42 @@ Route::get('/changePostStatus/{id}',[PostController::class,'changePostStatus']);
 Route::post('/updateRecord/{id}',[CoachController::class,'updateRecord']);
 // Update the Record
 
+// Get HomeSlides
+Route::get('/slidder_record',[HomeSlidderController::class,'slidder_record']);
+// Get HomeSlides
+
+// Change Slider Status
+Route::get('/change_status/{id}',[HomeSlidderController::class,'change_status']);
+// Change Slider Status
+
+// Update Slidder 
+Route::post('/updateSlidder/{id}',[HomeSlidderController::class,'updateSlidder']);
+// Update Slidder 
+
+// Change Service Status
+Route::get('/ServiceStatus/{id}',[HomeServiceController::class,'ServiceStatus']);
+// Change Service Status
+
+// Update Service 
+Route::post('/UpdateService/{id}',[HomeServiceController::class,'UpdateService']);
+// Update Service 
+
+// About Service Status
+Route::get('/AboutServiceStatus/{id}',[FeatureServiceController::class,'AboutServiceStatus']);
+// About Service Status
+
+// About Service Status
+Route::post('/UpdateFeatureService/{id}',[FeatureServiceController::class,'UpdateFeatureService']);
+// About Service Status
+
+// Update Feature Question
+Route::post('/UpdateFrequentlyQuestion/{id}',[FrequentlyQuestionController::class,'UpdateFrequentlyQuestion']);
+// Update Feature Question
+
+// Update Feature Question
+Route::get('/UpdateFeatureStatus/{id}',[FrequentlyQuestionController::class,'UpdateFeatureStatus']);
+// Update Feature Question
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,

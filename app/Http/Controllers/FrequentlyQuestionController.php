@@ -13,7 +13,12 @@ class FrequentlyQuestionController extends Controller
      */
     public function index()
     {
-        //
+        $question = FrequentlyQuestion::all();
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Record Get Successfully',
+            'question'  => $question
+        ],201); 
     }
 
     /**
@@ -64,13 +69,87 @@ class FrequentlyQuestionController extends Controller
 
     }
 
+    public function UpdateFrequentlyQuestion(Request $request, $id)
+    {
+        $frequentlyQuestion = FrequentlyQuestion::find($id);
+
+        if (!$frequentlyQuestion) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Record not found'
+            ], 404);
+        }
+
+        $validation = Validator::make($request->all(), [
+            'title'       => 'required',
+            'question'    => 'required',
+            'description' => 'required',
+            'image'       => 'nullable|image'
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $validation->errors()
+            ], 422);
+        }
+
+        if ($request->hasFile('image')) {
+            $questionImage = $request->file('image');
+            $ext = $questionImage->getClientOriginalExtension();
+
+            if ($frequentlyQuestion->image && file_exists(public_path('uploads/frequently_question/' . $frequentlyQuestion->image))) {
+                unlink(public_path('uploads/frequently_question/' . $frequentlyQuestion->image));
+            }
+
+            $questionImageName = time() . '.' . $ext;
+            $questionImage->move(public_path('uploads/frequently_question'), $questionImageName);
+
+            $frequentlyQuestion->image = $questionImageName;
+        }
+        $frequentlyQuestion->title = $request->title;
+        $frequentlyQuestion->question = $request->question;
+        $frequentlyQuestion->description = $request->description;
+        $frequentlyQuestion->save();
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Record updated successfully',
+            'data'     => $frequentlyQuestion
+        ], 200);
+    }
+
+    public function UpdateFeatureStatus($id){
+        $question = FrequentlyQuestion::find($id);
+        if($question->status == 'active'){
+            $question->status = 'block';
+        }else{
+            $question->status = 'active';
+        }
+        $question->save();
+        return response()->json([
+            'success'      => true,
+            'message'      => 'Record Saved Successfully',
+            'question_status'     => $question,
+        ],201);
+    }
+
+
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        //
+        $single_question = FrequentlyQuestion::find($id);
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Record Get Successfully',
+            'frequentlyquestion'  => $single_question
+
+        ],201);
     }
+
 
     /**
      * Show the form for editing the specified resource.

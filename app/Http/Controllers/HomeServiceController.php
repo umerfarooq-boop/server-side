@@ -13,7 +13,12 @@ class HomeServiceController extends Controller
      */
     public function index()
     {
-        //
+        $service = HomeService::all();
+        return response()->json([
+            'status'  => true,
+            'message' => 'Record Get Successfully',
+            'service' => $service
+        ],201);
     }
 
     /**
@@ -58,13 +63,81 @@ class HomeServiceController extends Controller
         ],201);
     }
 
+    public function ServiceStatus($id){
+        $service = HomeService::find($id);
+        if($service->status == 'active'){
+            $service->status = 'block';
+        }else{
+            $service->status = 'active';
+        }
+        $service->save();
+        return response()->json([
+            'status'  => true,
+            'message' => 'Status Updated Successfully',
+            'service_status' => $service
+        ],201);
+    }
+
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        //
+        $service = HomeService::find($id);
+        return response()->json([
+            'status'  => true,
+            'message' => 'Record Get Successfully',
+            'service' => $service
+        ],201);
     }
+
+    public function UpdateService(Request $request, $id)
+{
+    $updateService = HomeService::find($id);
+    if (!$updateService) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Record Not Found',
+        ], 404); // Corrected status code
+    }
+
+    $validation = Validator::make($request->all(), [
+        'service_image' => 'sometimes|file', // 'sometimes' allows optional file upload
+        'service_text'  => 'required|string'
+    ]);
+    if ($validation->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation Error',
+            'error'   => $validation->errors(),
+        ], 422);
+    }
+
+    if ($request->hasFile('service_image')) {
+        $service_image = $request->file('service_image');
+        $ext = $service_image->getClientOriginalExtension();
+
+        // Delete old file if it exists
+        if ($updateService->service_image && file_exists(public_path('uploads/service_image/' . $updateService->service_image))) {
+            unlink(public_path('uploads/service_image/' . $updateService->service_image));
+        }
+
+        $service_image_name = time() . '.' . $ext;
+        $service_image->move(public_path('uploads/service_image'), $service_image_name);
+
+        $updateService->service_image = $service_image_name;
+    }
+
+    $updateService->service_text = $request->service_text;
+    $updateService->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Record Updated Successfully',
+        'service' => $updateService
+    ], 200); // Corrected status code
+}
+
 
     /**
      * Show the form for editing the specified resource.
