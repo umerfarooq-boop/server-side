@@ -37,4 +37,8 @@ class player extends Model
         return $this->hasMany(Player::class,'player_id','id');
     }
 
+    public function feedbackForm(){
+        return $this->hasMany(FeedbackForm::class,'user_id','id');
+    }
+
 }

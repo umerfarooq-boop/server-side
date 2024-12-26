@@ -11,6 +11,7 @@ use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeServiceController;
 use App\Http\Controllers\HomeSlidderController;
+use App\Http\Controllers\FeedbackFormController;
 use App\Http\Controllers\PlayerParentController;
 use App\Http\Controllers\CoachScheduleController;
 use App\Http\Controllers\SportCategoryController;
@@ -113,5 +114,6 @@ Route::resources([
     'homeservice' => HomeServiceController::class,
     'featureservice' => FeatureServiceController::class,
     'frequentlyquestion' => FrequentlyQuestionController::class,
+    'feedbackform' => FeedbackFormController::class
 ]);
 

@@ -87,7 +87,12 @@ class PlayerController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $player_record = Player::with(['sportCategory','playerParent'])->find($id);
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Found Successfully',
+            'player_record' => $player_record,
+        ],201); 
     }
 
     /**

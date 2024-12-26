@@ -42,4 +42,8 @@ class Profile extends Model
         return $this->belongsTo(Academy::class,'academy_id');
     }
 
+    public function FeedbackForm(){
+        return $this->hasOne(FeedbackForm::class,'user_id','id');
+    }
+
 }

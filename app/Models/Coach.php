@@ -41,5 +41,8 @@ class Coach extends Model
         return $this->hasOne(Academy::class, 'coach_id', 'id');
     }
 
+    public function feedbackForm(){
+        return $this->hasMany(feedbackForm::class,'user_id','id');
+    }
 
 }
