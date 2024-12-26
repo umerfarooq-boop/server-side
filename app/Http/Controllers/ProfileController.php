@@ -226,24 +226,21 @@ class ProfileController extends Controller
                 'experience' => 'required|string',
                 'level' => 'required|string',
                 'phone_number' => 'required|string',
-                'coach_location' => 'required'
+                'coach_location' => 'required',
+                'image' => 'required|file|mimes:jpeg,jpg,png|max:180', // 180 KB for image
+                'certificate' => 'required|file|mimes:pdf|max:51200', // 50 MB for PDF
             ]);
-
+            
             // Handling image upload for coach image
             $coachimage = $request->file('image');
-            $cimageextension = $coachimage->getClientOriginalExtension();
-            $cimagename = time() . '.' . $cimageextension;
+            $cimagename = time() . '.' . $coachimage->getClientOriginalExtension();
             $coachimage->move(public_path('uploads/coach_image'), $cimagename);
-
+            
             // Handling file upload for coach certificate
             $coachcertificate = $request->file('certificate');
-            if ($coachcertificate->getClientOriginalExtension() !== 'pdf') {
-                return back()->withErrors(['certificate' => 'The file must be a PDF.']);
-            }        
-            $ccertificateeextension = $coachcertificate->getClientOriginalExtension();
-            $ccertificatename = time() . '.' . $ccertificateeextension;
+            $ccertificatename = time() . '.' . $coachcertificate->getClientOriginalExtension();
             $coachcertificate->move(public_path('uploads/coach_certificate'), $ccertificatename);
-
+            
             // Create a new coach record
             $coach = new Coach();
             $coach->name = $request->name;
@@ -307,9 +304,9 @@ class ProfileController extends Controller
                 'player_location' => 'required|string',
                 'player_address' => 'required|string',
                 'player_dob' => 'required|date',
-                // 'status' => 'required|string',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:180', // 180 KB max size
             ]);
-
+        
             // Create a new player record
             $player = new Player();
             $player->player_name = $request->player_name;
@@ -320,18 +317,17 @@ class ProfileController extends Controller
             $player->player_dob = $request->player_dob;
             $player->player_location = $request->player_location;
             $player->player_address = $request->player_address;
-
-
+        
             $playerimage = $request->file('image');
-            $playerext = $playerimage->getClientOriginalName();
+            $playerext = $playerimage->getClientOriginalExtension(); // Use getClientOriginalExtension for the extension
             $playerimageName = time().'.'.$playerext;
-            $playerimage->move(public_path('uploads/player_image'),$playerimageName);
-    
+            $playerimage->move(public_path('uploads/player_image'), $playerimageName);
+        
             // Save the player and link it to the profile
             $player->image = $playerimageName;
             $player->save();
             $profile->player_id = $player->id;
-
+        
             $parent = new PlayerParent();
             $parent->cnic = $request->cnic;
             $parent->name = $request->name;
@@ -339,11 +335,11 @@ class ProfileController extends Controller
             $parent->player_id = $player->id;
             $parent->phone_number = $request->phone_number;
             $parent->location = $request->location;
-            // $parent->status = $request->status;
             $parent->save();
-
+        
             $profile->parent_id = $parent->id;
         }
+        
 
         // Save the profile with associated player or coach IDs
         $profile->save();

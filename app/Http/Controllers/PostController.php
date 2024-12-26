@@ -34,7 +34,7 @@ class PostController extends Controller
                     ->groupBy('coach_id');
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(4); // Correctly chain the paginate() method here
+            ->paginate(8); // Correctly chain the paginate() method here
     
         return response()->json([
             "success" => true,
