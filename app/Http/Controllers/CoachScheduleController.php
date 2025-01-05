@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CoachSchedule;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Notification;
+
 
 class CoachScheduleController extends Controller
 {
@@ -20,6 +22,23 @@ class CoachScheduleController extends Controller
             'message' => 'Record get Successfully',
             'coach' => $coach_schedule
         ],201);
+    }
+
+    public function PlayerRequests($id){
+        $coaches = CoachSchedule::with(['coach', 'sportCategory', 'player'])->where('coach_id', $id)->orderBy('id', 'desc')->get();
+
+        if($coaches) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Record Get Successfully',
+                'CoachSchedule' => $coaches,
+            ], 201);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Record Not Found',
+            ], 401);
+        }
     }
 
     public function coachschedule(){
@@ -38,66 +57,67 @@ class CoachScheduleController extends Controller
      */
     public function store(Request $request)
     {
-    // Step 1: Validate the incoming data
-    $validator = Validator::make($request->all(), [
-        'coach_id' => 'required',
-        'player_id' => 'required',
-        'start_time' => 'required',
-        'end_time' => 'required',
-        'booking_slot' => 'required',
-        'event_name' => 'required',
-        'to_date' => 'required|date',
-        'from_date' => 'required|date',
-        'status' => 'required',
-    ]);
+        $validator = Validator::make($request->all(), [
+            'coach_id' => 'required',
+            'player_id' => 'required',
+            'start_time' => 'required',
+            'end_time' => 'required',
+            'booking_slot' => 'required',
+            'event_name' => 'required',
+            'to_date' => 'required|date',
+            'from_date' => 'required|date',
+            'status' => 'required',
+        ]);
 
-    if ($validator->fails()) {
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation errors occurred',
+                'error' => $validator->errors(),
+            ], 401);
+        }
+
+        $conflict = CoachSchedule::where('coach_id', $request->coach_id)
+            ->where('from_date', $request->from_date)
+            ->where(function ($query) use ($request) {
+                $query->whereBetween('start_time', [$request->start_time, $request->end_time])
+                    ->orWhereBetween('end_time', [$request->start_time, $request->end_time])
+                    ->orWhereRaw('? BETWEEN start_time AND end_time', [$request->start_time])
+                    ->orWhereRaw('? BETWEEN start_time AND end_time', [$request->end_time]);
+            })
+            ->exists();
+
+        if ($conflict) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This time slot is already booked. Please choose a different time.',
+            ], 409);
+        }
+
+        $coach = new CoachSchedule();
+        $coach->coach_id = $request->coach_id;
+        $coach->player_id = $request->player_id;
+        $coach->start_time = $request->start_time;
+        $coach->end_time = $request->end_time;
+        $coach->booking_slot = $request->booking_slot;
+        $coach->to_date = $request->to_date;
+        $coach->from_date = $request->from_date;
+        $coach->event_name = $request->event_name;
+        $coach->status = $request->status;
+        $coach->save();
+
+        // Create a notification for the coach
+        Notification::create([
+            'coach_id' => $request->coach_id,
+            'player_id' => $request->player_id,
+            'message' => 'You have a new booking from Player ' . $request->player_id,
+        ]);
+
         return response()->json([
-            'status' => false,
-            'message' => 'Validation errors occurred',
-            'error' => $validator->errors(),
-        ], 401);
-    }
-
-    // Step 2: Check if there is a conflict with another appointment
-    $conflict = CoachSchedule::where('coach_id', $request->coach_id)
-        ->where('from_date', $request->from_date)
-        ->where(function ($query) use ($request) {
-            $query->whereBetween('start_time', [$request->start_time, $request->end_time])
-                  ->orWhereBetween('end_time', [$request->start_time, $request->end_time])
-                  ->orWhereRaw('? BETWEEN start_time AND end_time', [$request->start_time])
-                  ->orWhereRaw('? BETWEEN start_time AND end_time', [$request->end_time]);
-        })
-        ->exists();
-
-    if ($conflict) {
-        return response()->json([
-            'status' => false,
-            'message' => 'This time slot is already booked. Please choose a different time.',
-        ], 409);
-    }
-
-    // Step 3: If no conflict, proceed to save the new appointment
-    $coach = new CoachSchedule();
-    $coach->coach_id = $request->coach_id;
-    $coach->player_id = $request->player_id;
-    $coach->start_time = $request->start_time;
-    $coach->end_time = $request->end_time;
-    $coach->booking_slot = $request->booking_slot;
-    $coach->to_date = $request->to_date;
-    $coach->from_date = $request->from_date;
-    $coach->event_name = $request->event_name;
-    $coach->status = $request->status;
-    $coach->save();
-
-
-    ///hhfsahdfsad my nmae is 
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Record Saved Successfully',
-        'coach' => $coach,
-    ], 201);
+            'status' => true,
+            'message' => 'Record Saved Successfully',
+            'coach' => $coach,
+        ], 201);
     }
 
 

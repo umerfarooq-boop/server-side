@@ -19,13 +19,13 @@ return new class extends Migration
             $table->time('end_time');   // Change this to time if only storing time
             $table->date('to_date');
             $table->date('from_date');
-            $table->string('booking_slot');
+            $table->unsignedBigInteger('booking_slot');
             $table->string('event_name');
             $table->string('status')->default('processing');
             $table->timestamps();
         });
     }
-
+// ALTER TABLE `coach_schedules` CHANGE `booking_slot` `booking_slot` BIGINT(20) UNSIGNED NOT NULL;
     /**
      * Reverse the migrations.
      */

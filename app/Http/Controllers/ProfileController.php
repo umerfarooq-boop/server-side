@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
+use auth;
 use App\Models\Coach;
 use App\Models\Player;
+use App\Models\Academy;
 use App\Models\Profile;
 use App\Models\PlayerParent;
-use App\Models\Academy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -290,6 +291,7 @@ class ProfileController extends Controller
             $newacademy->coach_id = $coach->id;
             $newacademy->save();
             $profile->coach_id = $coach->id;
+            $profile->user_id = $coach->id;
 
         }
 
@@ -327,6 +329,7 @@ class ProfileController extends Controller
             $player->image = $playerimageName;
             $player->save();
             $profile->player_id = $player->id;
+            $profile->user_id = $player->id;
         
             $parent = new PlayerParent();
             $parent->cnic = $request->cnic;
@@ -353,6 +356,26 @@ class ProfileController extends Controller
             'location' => $profile->profile_location ?? null,
         ], 201);
     }
+
+
+  // Decode user info from JWT token
+    public function getProfileData($id,$role)
+    {
+        $user = Profile::with(['user', 'coach', 'player', 'academy','playerParent'])
+        ->where('user_id', $id)
+        ->where('role', $role)
+        ->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Record retrieved successfully',
+            'user' => $user,
+        ]);
+    }
+
+
+
+// store role and get record from user_id when creating the profile so please set this code
 
 
 

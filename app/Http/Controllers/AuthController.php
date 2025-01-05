@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use App\Mail\SendOtpMail;
+use App\Mail\ForgotOtpMail;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Mail\SendOtpMail;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -53,7 +55,7 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'Email Verified'
             ],200);
-            $user->update(['email_verified_at' => true, 'otp' => null, 'otp_expires_at' => null]);
+            $user->update(['email_verified_at' => 1, 'otp' => null, 'otp_expires_at' => 0]);
         }else{
 
             return response()->json(['message' => 'Invalid OTP Time Over'], 400);
@@ -61,27 +63,124 @@ class AuthController extends Controller
 
     }
 
+    public function forgotOtp($id){
+        $user = User::find($id);
+        $otp = rand(1000, 9999);
+        $user->forgot_otp = $otp;
+        $user->save();
+        Mail::to($user->email)->send(new ForgotOtpMail($user));
+        if($user){
+            return response()->json([
+                'success' => true,
+                'message' => 'Record Get Successfully',
+                'user'    => $user
+            ],201);
+        }
+    }
 
-    public function login(Request $request){
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+    public function verifyForgotOtp(Request $request, $id) {
+        $user = User::find($id);
+        // return $user;
+        $request->validate([
+            'forgot_otp' => 'required|string',
+            'email' => 'required|email'
+        ]);
+    
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found'], 404);
+        }
+    
+        if ($user->forgot_otp === $request->forgot_otp) {
+            // Invalidate OTP after successful use
+            $user->update(['forgot_otp' => null]);
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Your OTP has been verified successfully.',
+            ], 200);
+        }
+    
+        return response()->json([
+            'success' => false,
+            'message' => 'OTP is invalid or has expired.',
+        ], 400);
+    }
+    
+    public function ForgotResendOtp(Request $request){
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+        
+        $user = User::where('email',$request->email)->first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found'], 404);
+        }
+        $otp = rand(1000,9999);
+        $user->forgot_otp = $otp;
+        $user->save();
+        
+        Mail::to($user->email)->send(new ForgotOtpMail($user));
+        return response()->json([
+            'success' => true,
+            'message' => 'Another OTP send on Your Email',
+            'record'  => $user
+
+        ]);
+    }
+
+    public function resetPassword(Request $request,$id){
+        $user = User::find($id);
+
+        $request->validate([
+            'password'  => 'required|confirmed'
         ]);
 
-        if(!$token = JWTAuth::attempt($credentials)){
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Record Found Successfully',
+            'user'     => $user
+        ],201);
+    }
+    
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid Credentials',
-            ],401);
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+        $credentials = $request->only('email', 'password');
+    
+        if (!$token = JWTAuth::attempt($credentials)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials'
+            ], 401);
+        }
+    
+        // Get the authenticated user
+        $user = auth()->user();
+    
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
-            'token' => $token, 
-            'user' => auth()->user()
+            'token' => $token,
+            'user' => $user
         ]);
-        
     }
+
+    
 
     public function resendOtp(Request $request){
         $request->validate([
@@ -108,4 +207,4 @@ class AuthController extends Controller
         ]);
     }
 
-}
+    }

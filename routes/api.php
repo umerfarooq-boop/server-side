@@ -12,6 +12,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeServiceController;
 use App\Http\Controllers\HomeSlidderController;
 use App\Http\Controllers\FeedbackFormController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlayerParentController;
 use App\Http\Controllers\CoachScheduleController;
 use App\Http\Controllers\SportCategoryController;
@@ -22,14 +23,34 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// Get Profile DATA
+Route::get('/profile-data/{id}/{role}', [ProfileController::class, 'getProfileData']);
+// Get Profile DATA
+
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/resend-otp',[AuthController::class,'resendOtp']);
 
+// Forgot Password OTP
+Route::post('/forgotOtp/{id}',[AuthController::class,'forgotOtp']);
+// Forgot Password OTP
+
+// verify Forgot OTP
+Route::post('/verifyForgotOtp/{id}', [AuthController::class, 'verifyForgotOtp']);
+// verify Forgot OTP
+
+// Resend Forgot OTP
+Route::post('/ForgotResendOtp', [AuthController::class, 'ForgotResendOtp']);
+// Resend Forgot OTP
+
+// Reset Password
+Route::post('/resetPassword/{id}',[AuthController::class,'resetPassword']);
+// Reset Password
+
 // Show coahc_record in front of Website
-    Route::get('/coach_record',[CoachController::class,'coach_record']);
+Route::get('/coach_record',[CoachController::class,'coach_record']);
 // Show coahc_record in front of Website
 
 // Show Coach Post in Website
@@ -99,6 +120,18 @@ Route::post('/UpdateFrequentlyQuestion/{id}',[FrequentlyQuestionController::clas
 // Update Feature Question
 Route::get('/UpdateFeatureStatus/{id}',[FrequentlyQuestionController::class,'UpdateFeatureStatus']);
 // Update Feature Question
+
+// Get Location of Coach Player
+Route::get('/getLocation/{id}',[PostController::class,'getLocation']);
+// Get Location of Coach Player
+
+// Player Requests
+Route::get('/PlayerRequests/{id}',[CoachScheduleController::class,'PlayerRequests']);
+// Player Requests
+
+// Sending Notification to Coach
+Route::get('/Getnotifications/{coach_id}', [NotificationController::class, 'getNotifications']);
+// Sending Notification to Coach
 
 Route::resources([
     'category' => SportCategoryController::class,

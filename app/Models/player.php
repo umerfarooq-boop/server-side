@@ -24,6 +24,10 @@ class player extends Model
         'updated_by',
         'location',
     ];   
+
+    public function coachSchedule(){
+        return $this->hasMany(CoachSchedule::class,'player_id','id');
+    }
     
     public function sportCategory(){
         return $this->belongsTo(SportCategory::class,'cat_id');

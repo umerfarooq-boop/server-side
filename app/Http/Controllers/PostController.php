@@ -15,7 +15,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $post = Post::with('coach')->get();
+        $post = Post::with('coach')->orderBy('id','desc')->get();
         return response()->json([
             'success' => true,
             'message' => 'Message Get Sucessfully',
@@ -146,14 +146,14 @@ class PostController extends Controller
         }
     }
 
-    public function showBlogPost($id){
+    public function showBlogPost($id)
+    {
+        $post = Post::with('coach')->where('coach_id', $id)->orderBy('id', 'desc')->paginate(2);
 
-        $post = Post::with('coach')->where('coach_id', $id)->orderBy('id', 'desc')->get();
-    
         if ($post->isEmpty()) {
             return response()->json([
                 "success" => false,
-                "message" => "No posts found for this coach."
+                "message" => "No posts found for this coach.",
             ], 404);
         }
 
@@ -163,6 +163,25 @@ class PostController extends Controller
             "post" => $post
         ], 200);
     }
+
+
+    public function getLocation($id){
+        $post = Post::with('coach')->where('coach_id', $id)->orderBy('id', 'desc')->get();
+
+        if ($post->isEmpty()) {
+            return response()->json([
+                "success" => false,
+                "message" => "No posts found for this coach.",
+            ], 404);
+        }
+
+        return response()->json([
+            "success" => true,
+            "message" => "Records fetched successfully",
+            "post" => $post
+        ], 200);
+    }
+
 
     /**
      * Show the form for editing the specified resource.

@@ -48,9 +48,9 @@
 </head>
 <body>
     <div class="email-container">
-        <h1>OTP Verification</h1>
+        <h1>ForGot OTP Verification</h1>
         <p>To continue, use the following OTP code:</p>
-        <div class="otp">{{ $otp }}</div>
+        <div class="otp">{{ $forgot_otp }}</div>
         <p>Please verify the code within one minute.</p>
         <p>If you didn't request this, please ignore this email.</p>
         <div class="footer">© 2024 Coach Selector. All rights reserved.</div>

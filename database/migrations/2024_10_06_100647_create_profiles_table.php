@@ -21,6 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('player_id')->nullable();
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->unsignedBigInteger('academy_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('profile_location');
             $table->text('address');
             $table->timestamps();

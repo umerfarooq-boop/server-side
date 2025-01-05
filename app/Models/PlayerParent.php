@@ -23,6 +23,10 @@ class PlayerParent extends Model
         return $this->belongsTo(Player::class,'player_id');
     }
 
+    public function playerParet(){
+        return $this->hasOne(Profile::class,'player_id','id');
+    }
+
     public function profile(){
         return $this->hasMany(Profile::class,'player_id','id');
     }

@@ -20,7 +20,16 @@ class Profile extends Model
         'academy_id',
         'profile_location',
         'address',
+        'user_id'
     ];  
+
+    public function playerParent(){
+        return $this->belongsTo(Profile::class,'player_id');
+    }
+
+    public function user(){
+        return $this->belongsTo(User::class,'user_id');
+    }
     
     public function sportCategory(){
         return $this->belongsTo(Profile::class,'cat_id');

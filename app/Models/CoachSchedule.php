@@ -19,6 +19,18 @@ class CoachSchedule extends Model
         'status',
         'to_date',
         'from_date'
-    ];    
+    ];
+
+    public function coach(){
+        return $this->belongsTo(Coach::class,'coach_id');
+    }
+
+    public function sportCategory(){
+        return $this->belongsTo(sportCategory::class,'booking_slot');
+    }
+    
+    public function player(){
+        return $this->belongsTo(player::class,'player_id');
+    }
 
 }

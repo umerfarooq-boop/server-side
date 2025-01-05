@@ -18,7 +18,11 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     
-        protected $fillable = ['name', 'email', 'password', 'otp', 'otp_expires_at', 'role','email_verified_at'];
+        protected $fillable = ['name', 'email', 'password', 'otp', 'otp_expires_at', 'role','email_verified_at','otp'];
+
+        public function profile(){
+            return $this->hasOne(Profile::class,'user_id','id');
+        }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -40,6 +44,7 @@ class User extends Authenticatable implements JWTSubject
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'forgot_otp' => 'string',
         ];
     }
 
