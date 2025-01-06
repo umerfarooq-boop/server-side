@@ -110,7 +110,7 @@ class CoachScheduleController extends Controller
         Notification::create([
             'coach_id' => $request->coach_id,
             'player_id' => $request->player_id,
-            'message' => 'You have a new booking from Player ' . $request->player_id,
+            'message' => 'You have a new booking from Player ' . $request->event_name,
         ]);
 
         return response()->json([

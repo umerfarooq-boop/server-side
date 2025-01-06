@@ -133,6 +133,10 @@ Route::get('/PlayerRequests/{id}',[CoachScheduleController::class,'PlayerRequest
 Route::get('/Getnotifications/{coach_id}', [NotificationController::class, 'getNotifications']);
 // Sending Notification to Coach
 
+// Update Notification When Read Notification
+Route::post('/markNotificationAsRead/{coach_id}', [NotificationController::class, 'markNotificationAsRead']);
+// Update Notification When Read Notification
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
