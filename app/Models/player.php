@@ -23,7 +23,11 @@ class player extends Model
         'created_by',
         'updated_by',
         'location',
-    ];   
+    ];
+
+    public function notification(){
+        return $this->hasMany(Notification::class,'player_id','id');
+    }
 
     public function coachSchedule(){
         return $this->hasMany(CoachSchedule::class,'player_id','id');

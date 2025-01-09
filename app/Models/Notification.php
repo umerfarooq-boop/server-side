@@ -17,4 +17,8 @@ class Notification extends Model
         return $this->belongsTo(Coach::class, 'coach_id');
     }
 
+    public function player(){
+        return $this->belongsTo(player::class,'player_id');
+    }
+
 }

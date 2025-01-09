@@ -10,10 +10,10 @@ class NotificationController extends Controller
 {
     public function getNotifications($coach_id)
     {
-        $notifications = Notification::where('coach_id', $coach_id)
-    ->where('is_read', 0)
-    ->orderBy('created_at', 'desc')
-    ->get();
+        $notifications = Notification::with('player')->where('coach_id', $coach_id)
+        ->where('is_read', 0)
+        ->orderBy('created_at', 'desc')
+        ->get();
 
 
         return response()->json([
@@ -21,6 +21,8 @@ class NotificationController extends Controller
             'notifications' => $notifications,
         ]);
     }
+
+    // public function NotificationImage
 
     public function markNotificationAsRead(Request $request, $coach_id)
     {

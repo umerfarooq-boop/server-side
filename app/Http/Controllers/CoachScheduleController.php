@@ -41,7 +41,36 @@ class CoachScheduleController extends Controller
         }
     }
 
+    public function SinglePlayerRequest($id, $role) {
+        $coaches = CoachSchedule::with(['coach', 'sportCategory', 'player'])
+            ->where('player_id', $id)
+            ->orderBy('id', 'desc')
+            ->get();
+    
+        if ($coaches) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Record Get Successfully',
+                'SinglePlayerRequest' => $coaches,
+            ], 200); // Use 200 instead of 201 for GET requests
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Record Not Found',
+            ], 404); // Use 404 for not found
+        }
+    }
+
     public function coachschedule(){
+    }
+
+    public function showCoachBookings($id){
+        $coach_schedule = CoachSchedule::with(['coach','player'])->where('coach_id',$id)->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'Record get Successfully',
+            'coach' => $coach_schedule
+        ],201);
     }
 
     /**
@@ -106,11 +135,13 @@ class CoachScheduleController extends Controller
         $coach->status = $request->status;
         $coach->save();
 
+        $coach->load('player');
+
         // Create a notification for the coach
         Notification::create([
             'coach_id' => $request->coach_id,
             'player_id' => $request->player_id,
-            'message' => 'You have a new booking from Player ' . $request->event_name,
+            'message' => 'You have a new booking from Player ' . $coach->player->player_name,
         ]);
 
         return response()->json([

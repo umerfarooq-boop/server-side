@@ -129,6 +129,10 @@ Route::get('/getLocation/{id}',[PostController::class,'getLocation']);
 Route::get('/PlayerRequests/{id}',[CoachScheduleController::class,'PlayerRequests']);
 // Player Requests
 
+// Single Player Requests
+Route::get('/SinglePlayerRequest/{id}/{role}',[CoachScheduleController::class,'SinglePlayerRequest']);
+// Single Player Requests
+
 // Sending Notification to Coach
 Route::get('/Getnotifications/{coach_id}', [NotificationController::class, 'getNotifications']);
 // Sending Notification to Coach
@@ -136,6 +140,10 @@ Route::get('/Getnotifications/{coach_id}', [NotificationController::class, 'getN
 // Update Notification When Read Notification
 Route::post('/markNotificationAsRead/{coach_id}', [NotificationController::class, 'markNotificationAsRead']);
 // Update Notification When Read Notification
+
+// Show Coach Bookings on Calender
+Route::get('/showCoachBookings/{id}',[CoachScheduleController::class,'showCoachBookings']);
+// Show Coach Bookings on Calender
 
 Route::resources([
     'category' => SportCategoryController::class,

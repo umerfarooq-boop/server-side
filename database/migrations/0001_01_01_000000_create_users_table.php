@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('role')->default('user');
             $table->string('otp')->nullable(); 
+            $table->string('forgot_otp')->nullable(); 
             $table->boolean('email_verified_at')->default(false);
             $table->timestamp('otp_expires_at')->nullable(); 
             $table->rememberToken();
