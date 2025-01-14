@@ -55,6 +55,7 @@ class PlayerParentController extends Controller
         $parent = new PlayerParent();
         $parent->cnic = $request->cnic;
         $parent->name = $request->name;
+        $parent->email = $request->email;
         $parent->address = $request->address;
         $parent->player_id = $request->player_id;
         $parent->phone_number = $request->phone_number;

@@ -69,6 +69,14 @@ Route::get('/coach_record',[CoachController::class,'coach_record']);
     // Route::get('/coachschedule',[CoachScheduleController::class,'coachschedule']);
 // Get Coach Record
 
+// Update Coach Schedule Stauts
+Route::get('/AcceptRequest/{id}',[CoachScheduleController::class,'AcceptRequest']);
+// Update Coach Schedule Stauts
+
+// Reject Coach Status
+Route::get('/RejectRequest/{id}',[CoachScheduleController::class,'RejectRequest']);
+// Reject Coach Status
+
 // Download File
 Route::get('/DownloadFile/{path}/{filename}', [CoachController::class, 'DownloadFile']);
 // Download File

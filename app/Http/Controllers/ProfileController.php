@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 use auth;
+use App\Models\User;
 use App\Models\Coach;
 use App\Models\Player;
 use App\Models\Academy;
 use App\Models\Profile;
+use Illuminate\Support\Str;
 use App\Models\PlayerParent;
 use Illuminate\Http\Request;
+use App\Mail\SendPasswordParent;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
@@ -334,13 +339,25 @@ class ProfileController extends Controller
             $parent = new PlayerParent();
             $parent->cnic = $request->cnic;
             $parent->name = $request->name;
+            $parent->email = $request->email;
             $parent->address = $request->address;
             $parent->player_id = $player->id;
             $parent->phone_number = $request->phone_number;
             $parent->location = $request->location;
             $parent->save();
-        
             $profile->parent_id = $parent->id;
+
+            $user = new User();
+            $user->name = $parent->name;
+            $user->email = $parent->email;
+            $user->role = 'parent';
+
+            // Generate random password
+            $parentPassword = Str::random(6);
+            $user->password = bcrypt($parentPassword);
+            $user->save();
+            Mail::to($user->email)->send(new SendPasswordParent($user, $player, $parentPassword));
+
         }
         
 

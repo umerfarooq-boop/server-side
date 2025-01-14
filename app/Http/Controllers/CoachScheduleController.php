@@ -73,6 +73,31 @@ class CoachScheduleController extends Controller
         ],201);
     }
 
+    public function AcceptRequest($id){
+        $coach = CoachSchedule::find($id);
+        if($coach->status === 'processing'){
+            $coach->status = 'booked';
+        }
+        $coach->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'Status Updated Successfully',
+            'updateStatus'  => $coach
+        ],201);
+    }   
+    public function RejectRequest($id){
+        $coach = CoachSchedule::find($id);
+        if($coach->status === 'processing'){
+            $coach->status = 'reject';
+        }
+        $coach->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'Status Updated Successfully',
+            'updateStatus'  => $coach
+        ],201);
+    }   
+
     /**
      * Show the form for creating a new resource.
      */

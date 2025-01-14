@@ -12,6 +12,7 @@ class PlayerParent extends Model
     protected $fillable = [
         'cnic',
         'name',
+        'email',
         'address',
         'player_id',
         'phone_number',
