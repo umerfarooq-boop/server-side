@@ -153,6 +153,10 @@ Route::post('/markNotificationAsRead/{coach_id}', [NotificationController::class
 Route::get('/showCoachBookings/{id}',[CoachScheduleController::class,'showCoachBookings']);
 // Show Coach Bookings on Calender
 
+// Booking Slot Same time Will be Disabled
+Route::get('/fetchBookedSlots/{id}',[CoachScheduleController::class,'fetchBookedSlots']);
+// Booking Slot Same time Will be Disabled
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,

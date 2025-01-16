@@ -58,12 +58,13 @@ class CoachController extends Controller
         if($coach->status == 'acitve'){
             $coach->status = 'block';
         }else{
-            $coach->status = 'block';
+            $coach->status = 'active';
         }
         $coach->save();
         return response()->json([
             'status' => true,
-            'message' => 'Status Updated Successfully'
+            'message' => 'Status Updated Successfully',
+            'user'  => $coach
         ]);
     }
 

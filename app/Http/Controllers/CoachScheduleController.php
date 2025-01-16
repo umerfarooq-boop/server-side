@@ -176,6 +176,23 @@ class CoachScheduleController extends Controller
         ], 201);
     }
 
+    public function fetchBookedSlots(Request $request, $coach_id)
+    {
+        $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        $bookedSlots = CoachSchedule::where('coach_id', $coach_id)
+            ->where('from_date', $request->date)
+            ->get(['start_time', 'end_time']);
+
+        return response()->json([
+            'status' => true,
+            'bookedSlots' => $bookedSlots,
+        ]);
+    }
+
+
 
     /**
      * Display the specified resource.
