@@ -27,7 +27,7 @@ class PostController extends Controller
 
     public function showPost()
     {
-        $post = Post::with('coach')
+        $post = Post::with(['coach.academy'])
             ->whereIn('id', function ($query) {
                 $query->selectRaw('MAX(id)')
                     ->from('posts')

@@ -25,4 +25,10 @@ protected $fillable = [
         return $this->belongsTo(Coach::class,'coach_id');
     }
 
+    public function academy()
+    {
+        return $this->belongsTo(Academy::class);
+    }
+
+
 }

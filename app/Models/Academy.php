@@ -34,5 +34,4 @@ class Academy extends Model
         return $this->belongsTo(Coach::class, 'coach_id', 'id');
     }
 
-
 }

@@ -285,16 +285,13 @@ class ProfileController extends Controller
                 $newacademy->academy_certificate = $academyCertificateName;
                 $newacademy->save();
                 $profile->academy_id = $newacademy->id;
+                // $coach->academy_id = $newacademy->id;
             }
-            // Save the coach and link it to the profile
             $coach->save();
-            // return response()->json([
-            //     "success" => true,
-            //     "message" => "Coach Created Successfull",
-            //     "coach" => $coach
-            // ],201);
             $newacademy->coach_id = $coach->id;
             $newacademy->save();
+            $coach->academy_id = $newacademy->id;
+            $coach->save();
             $profile->coach_id = $coach->id;
             $profile->user_id = $coach->id;
 
