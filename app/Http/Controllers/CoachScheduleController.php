@@ -177,20 +177,24 @@ class CoachScheduleController extends Controller
     }
 
     public function fetchBookedSlots(Request $request, $coach_id)
-    {
-        $request->validate([
-            'date' => 'required|date',
-        ]);
+{
+    $request->validate([
+        'date' => 'required|date',
+    ]);
 
-        $bookedSlots = CoachSchedule::where('coach_id', $coach_id)
-            ->where('from_date', $request->date)
-            ->get(['start_time', 'end_time']);
+    $date = $request->date;
 
-        return response()->json([
-            'status' => true,
-            'bookedSlots' => $bookedSlots,
-        ]);
-    }
+    $bookedSlots = CoachSchedule::where('coach_id', $coach_id)
+        ->whereDate('from_date', '<=', $date)
+        ->whereDate('to_date', '>=', $date) // Assuming `to_date` column exists
+        ->get(['start_time', 'end_time', 'from_date', 'to_date']);
+
+    return response()->json([
+        'status' => true,
+        'bookedSlots' => $bookedSlots,
+    ]);
+}
+
 
 
 
