@@ -73,22 +73,50 @@ class CoachScheduleController extends Controller
         ],201);
     }
 
-    public function AcceptRequest($id){
-        $coach = CoachSchedule::find($id);
-        if($coach->status === 'processing'){
-            $coach->status = 'booked';
-        }
-        $coach->save();
+    public function AcceptRequest($id) {
+    $coach = CoachSchedule::find($id);
+    if (!$coach) {
         return response()->json([
-            'status' => true,
-            'message' => 'Status Updated Successfully',
-            'updateStatus'  => $coach
-        ],201);
-    }   
+            'status' => false,
+            'message' => 'Coach schedule not found.'
+        ], 404);
+    }
+
+    if ($coach->status === 'processing') {
+        $coach->status = 'booked';
+    } else {
+        return response()->json([
+            'status' => false,
+            'message' => 'Status update not allowed.'
+        ], 400);
+    }
+
+    $coach->save();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Status Updated Successfully',
+        'updateStatus' => $coach
+    ], 200);
+}
+
     public function RejectRequest($id){
         $coach = CoachSchedule::find($id);
+
+        if (!$coach) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Coach schedule not found.'
+            ], 404);
+        }
+    
         if($coach->status === 'processing'){
             $coach->status = 'reject';
+        }else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Status update not allowed.'
+            ], 400);
         }
         $coach->save();
         return response()->json([
