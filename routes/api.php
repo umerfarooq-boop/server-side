@@ -9,6 +9,7 @@ use App\Http\Controllers\VedioController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\HomeServiceController;
 use App\Http\Controllers\HomeSlidderController;
 use App\Http\Controllers\FeedbackFormController;
@@ -68,6 +69,14 @@ Route::get('/coach_record',[CoachController::class,'coach_record']);
 // Get Coach Record
     // Route::get('/coachschedule',[CoachScheduleController::class,'coachschedule']);
 // Get Coach Record
+
+// Get Appointment Record
+Route::get('/editAppointmentDate/{id}',[CoachScheduleController::class,'editAppointmentDate']);
+// Get Appointment Record
+
+// Update Appointment Record
+Route::post('/updateAppointmentData/{id}',[CoachScheduleController::class,'updateAppointmentData']);
+// Update Appointment Record
 
 // Update Coach Schedule Stauts
 Route::get('/AcceptRequest/{id}',[CoachScheduleController::class,'AcceptRequest']);
@@ -157,6 +166,10 @@ Route::get('/showCoachBookings/{id}',[CoachScheduleController::class,'showCoachB
 Route::get('/fetchBookedSlots/{id}',[CoachScheduleController::class,'fetchBookedSlots']);
 // Booking Slot Same time Will be Disabled
 
+// Mark Attendance
+Route::post('/markAttendance/{id}',[AttendanceController::class,'markAttendance']);
+// Mark Attendance
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
@@ -171,6 +184,7 @@ Route::resources([
     'homeservice' => HomeServiceController::class,
     'featureservice' => FeatureServiceController::class,
     'frequentlyquestion' => FrequentlyQuestionController::class,
-    'feedbackform' => FeedbackFormController::class
+    'feedbackform' => FeedbackFormController::class,
+    'attendance' => AttendanceController::class,
 ]);
 

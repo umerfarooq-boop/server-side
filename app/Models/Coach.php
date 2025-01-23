@@ -20,6 +20,10 @@ class Coach extends Model
         'status',
     ];
 
+    public function attendance(){
+        return $this->hasMany(Attendacne::class,'coach_id','id');
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class, 'coach_id','id');

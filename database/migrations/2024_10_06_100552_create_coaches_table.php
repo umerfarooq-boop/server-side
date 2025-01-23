@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->unsignedBigInteger('category_id');
-            $table->unsignedBigInteger('academy_id');
+            $table->unsignedBigInteger('academy_id')->nullable();
             $table->string('experience');
             $table->string('level');
             $table->string('phone_number');

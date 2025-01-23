@@ -21,6 +21,10 @@ class CoachSchedule extends Model
         'from_date'
     ];
 
+    public function attendance(){
+        return $this->hasMany(Attendance::class,'appointment_id','id');
+    }
+
     public function coach(){
         return $this->belongsTo(Coach::class,'coach_id');
     }

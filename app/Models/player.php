@@ -25,6 +25,10 @@ class player extends Model
         'location',
     ];
 
+    public function attendance(){
+        return $this->hasMany(Attendence::class,'player_id','id');
+    }
+
     public function notification(){
         return $this->hasMany(Notification::class,'player_id','id');
     }

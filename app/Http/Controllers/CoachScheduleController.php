@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendence;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\CoachSchedule;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Notification;
 
 
 class CoachScheduleController extends Controller
@@ -73,32 +75,46 @@ class CoachScheduleController extends Controller
         ],201);
     }
 
+
+    // here i can paste the code that is appointment accept table data insert in table
+
     public function AcceptRequest($id) {
-    $coach = CoachSchedule::find($id);
-    if (!$coach) {
+
+        $coach = CoachSchedule::find($id);
+        if (!$coach) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Coach schedule not found.'
+            ], 404);
+        }
+
+        if ($coach->status === 'processing') {
+            $coach->status = 'booked';
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Status update not allowed.'
+            ], 400);
+        }
+
+        $coach->save();
+
+        $attendance = new Attendence();
+        $attendance->date = Carbon::now()->toDateString();
+        $attendance->start_time = Carbon::parse($coach->start_time);
+        $attendance->end_time = Carbon::parse($coach->end_time);
+        $attendance->coach_id = $coach->coach_id;
+        $attendance->player_id = $coach->player_id;
+        $attendance->appointment_id = $coach->id;
+        $attendance->attendance_status = null;
+        $attendance->save();
+
         return response()->json([
-            'status' => false,
-            'message' => 'Coach schedule not found.'
-        ], 404);
+            'status' => true,
+            'message' => 'Status Updated Successfully',
+            'updateStatus' => $coach
+        ], 200);
     }
-
-    if ($coach->status === 'processing') {
-        $coach->status = 'booked';
-    } else {
-        return response()->json([
-            'status' => false,
-            'message' => 'Status update not allowed.'
-        ], 400);
-    }
-
-    $coach->save();
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Status Updated Successfully',
-        'updateStatus' => $coach
-    ], 200);
-}
 
     public function RejectRequest($id){
         $coach = CoachSchedule::find($id);
@@ -119,12 +135,54 @@ class CoachScheduleController extends Controller
             ], 400);
         }
         $coach->save();
+
         return response()->json([
             'status' => true,
             'message' => 'Status Updated Successfully',
             'updateStatus'  => $coach
         ],201);
     }   
+
+    public function editAppointmentDate($id){
+        $coach = CoachSchedule::find($id);
+        return response()->json([
+            'status'   => true,
+            'message'  => 'Record Get Successfully',
+            'caoch_schedule'    => $coach
+        ],201);
+    }
+
+    public function updateAppointmentData(Request $request, $id)
+    {
+        // Validate request data
+        $validated = $request->validate([
+            'to_date' => 'required|date',
+            'from_date' => 'required|date',
+        ]);
+
+        // Find the coach schedule
+        $coach = CoachSchedule::find($id);
+
+        if (!$coach) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Record not found.',
+            ], 404);
+        }
+
+        // Update fields
+        $coach->to_date = $validated['to_date'];
+        $coach->from_date = $validated['from_date'];
+        $coach->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Record updated successfully.',
+            'coach' => $coach,
+        ], 200);
+    }
+
+
 
     /**
      * Show the form for creating a new resource.
