@@ -170,6 +170,14 @@ Route::get('/fetchBookedSlots/{id}',[CoachScheduleController::class,'fetchBooked
 Route::post('/markAttendance/{id}',[AttendanceController::class,'markAttendance']);
 // Mark Attendance
 
+// Book Appointment for Team
+Route::post('/TeamBooking',[CoachScheduleController::class,'TeamBooking']);
+// Book Appointment for Team
+
+// Get Team Booking Slot
+Route::get('/fetchBookedSlotsTeam/{id}',[CoachScheduleController::class,'fetchBookedSlotsTeam']);
+// Get Team Booking Slot
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
