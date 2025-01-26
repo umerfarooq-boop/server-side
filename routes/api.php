@@ -10,6 +10,7 @@ use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\PlayerScoreCotroller;
 use App\Http\Controllers\HomeServiceController;
 use App\Http\Controllers\HomeSlidderController;
 use App\Http\Controllers\FeedbackFormController;
@@ -178,6 +179,10 @@ Route::post('/TeamBooking',[CoachScheduleController::class,'TeamBooking']);
 Route::get('/fetchBookedSlotsTeam/{id}',[CoachScheduleController::class,'fetchBookedSlotsTeam']);
 // Get Team Booking Slot
 
+// Show Student Attendance
+Route::get('/studentAttendance/{id}',[AttendanceController::class,'studentAttendance']);
+// Show Student Attendance
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
@@ -194,5 +199,6 @@ Route::resources([
     'frequentlyquestion' => FrequentlyQuestionController::class,
     'feedbackform' => FeedbackFormController::class,
     'attendance' => AttendanceController::class,
+    'playerscore' => PlayerScoreCotroller::class,
 ]);
 
