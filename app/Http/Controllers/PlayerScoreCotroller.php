@@ -12,7 +12,7 @@ class PlayerScoreCotroller extends Controller
      */
     public function index()
     {
-        //
+        
     }
 
     /**
@@ -30,8 +30,8 @@ class PlayerScoreCotroller extends Controller
     {
         $validated = $request->validate([
             'player_id' => 'nullable|integer',
-            'coach_id' => 'nullable|required',
-            'player_type' => 'required|string',
+            'coach_id' => 'nullable',
+            'player_type' => 'string',
             'played_over' => 'nullable|integer',
             'today_give_wickets' => 'nullable|integer',
             'through_over' => 'nullable|integer',
@@ -43,6 +43,7 @@ class PlayerScoreCotroller extends Controller
         }
 
         $validated['coach_id'] = $request->coach_id;
+        $validated['player_id'] = $request->player_id;
 
         $existingRecord = PlayerScore::where('player_id', $validated['player_id'])
         ->whereDate('date', $validated['date'])
@@ -71,6 +72,40 @@ class PlayerScoreCotroller extends Controller
             'message' => 'Record Store Successfully',
             'playerScore' => $playerScore
         ],201);
+    }
+
+    public function EditPlayerRecord($player_id){
+        $playerScore = PlayerScore::where('player_id', $player_id)->first();
+
+        if (!$playerScore) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Record Get successfully',
+            'playerScore' => $playerScore
+        ]);
+    }
+
+    public function UpdateScore(Request $request,string $id){
+        $validated = $request->validate([
+            'player_type' => 'required|string',
+            'played_over' => 'nullable|integer',
+            'today_give_wickets' => 'nullable|integer',
+            'through_over' => 'nullable|integer',
+            'today_taken_wickets' => 'nullable|integer',
+        ]);
+    
+        $playerScore = PlayerScore::where('player_id', $id)->first();
+    
+        if (!$playerScore) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+    
+        $playerScore->update($validated);
+    
+        return response()->json(['message' => 'Player Score updated successfully', 'UpdateScore' => $playerScore]);
     }
 
     /**

@@ -42,6 +42,37 @@ class CoachScheduleController extends Controller
                 'message' => 'Record Not Found',
             ], 401);
         }
+
+        $coaches->to_date > now();
+        $coach->delete();
+        $coaches->save();
+        deleteExpiredSlots();
+
+    }
+
+
+    public function deleteExpiredSlots()
+    {
+        try {
+            // Get the current date and time
+            $currentDate = Carbon::now()->toDateString();
+            $currentTime = Carbon::now()->toTimeString();
+
+            // Delete the booking slots where the current date is greater than 'to_date' 
+            // and the current time is greater than 'start_time'
+            DB::table('coach_schedules') // Replace 'your_table_name' with your actual table name
+                ->where('to_date', '<', $currentDate)
+                ->orWhere(function ($query) use ($currentDate, $currentTime) {
+                    $query->where('to_date', '=', $currentDate)
+                        ->where('start_time', '<', $currentTime);
+                })
+                ->delete();
+
+            return response()->json(['message' => 'Expired booking slots deleted successfully.'], 201);
+        } catch (\Exception $e) {
+            // Handle errors and return a response
+            return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
     }
 
     public function SinglePlayerRequest($id, $role) {
@@ -169,6 +200,10 @@ class CoachScheduleController extends Controller
         $validated = $request->validate([
             'to_date' => 'required|date',
             'from_date' => 'required|date',
+            'end_time'  => 'required',
+            'booking_slot'  => 'required',
+            'event_name'  => 'required',
+            'start_time'  => 'required',
         ]);
 
         // Find the coach schedule
@@ -184,6 +219,11 @@ class CoachScheduleController extends Controller
         // Update fields
         $coach->to_date = $validated['to_date'];
         $coach->from_date = $validated['from_date'];
+        $coach->end_time = $validated['end_time'];
+        $coach->booking_slot = $validated['booking_slot'];
+        $coach->event_name = $validated['event_name'];
+        $coach->start_time = $validated['start_time'];
+        $coach->status = 'processing';
         $coach->save();
 
         return response()->json([
@@ -427,15 +467,17 @@ class CoachScheduleController extends Controller
     ]);
     }
 
-
-
-
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        //
+        $coach_record = CoachSchedule::with(['player','coach'])->where('coach_id',$id)->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Record Saved Successfully',
+            'coach_record' => $coach_record
+        ],201);
     }
 
     /**

@@ -183,6 +183,14 @@ Route::get('/fetchBookedSlotsTeam/{id}',[CoachScheduleController::class,'fetchBo
 Route::get('/studentAttendance/{id}',[AttendanceController::class,'studentAttendance']);
 // Show Student Attendance
 
+// Edit Player Score
+Route::get('/EditPlayerRecord/{id}',[PlayerScoreCotroller::class,'EditPlayerRecord']);
+// Edit Player Score
+
+// Update Score
+Route::post('/UpdateScore/{id}',[PlayerScoreCotroller::class,'UpdateScore']);
+// Update Score
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
