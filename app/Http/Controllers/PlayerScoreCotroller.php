@@ -88,7 +88,8 @@ class PlayerScoreCotroller extends Controller
         ]);
     }
 
-    public function UpdateScore(Request $request,string $id){
+    public function UpdateScore(Request $request, string $id)
+    {
         $validated = $request->validate([
             'player_type' => 'required|string',
             'played_over' => 'nullable|integer',
@@ -96,17 +97,37 @@ class PlayerScoreCotroller extends Controller
             'through_over' => 'nullable|integer',
             'today_taken_wickets' => 'nullable|integer',
         ]);
-    
+
         $playerScore = PlayerScore::where('player_id', $id)->first();
-    
+
         if (!$playerScore) {
             return response()->json(['message' => 'Record not found'], 404);
         }
-    
-        $playerScore->update($validated);
-    
+
+        if ($validated['player_type'] === "bowler") {
+            $playerScore->through_over = $validated['through_over'];
+            $playerScore->today_taken_wickets = $validated['today_taken_wickets'];
+            $playerScore->played_over = null;
+            $playerScore->today_give_wickets = null;
+        } elseif ($validated['player_type'] === "batsman") {
+            $playerScore->played_over = $validated['played_over'];
+            $playerScore->today_give_wickets = $validated['today_give_wickets'];
+            $playerScore->through_over = null;
+            $playerScore->today_taken_wickets = null;
+        } elseif ($validated['player_type'] === "allrounder") {
+            $playerScore->played_over = $validated['played_over'];
+            $playerScore->today_give_wickets = $validated['today_give_wickets'];
+            $playerScore->through_over = $validated['through_over'];
+            $playerScore->today_taken_wickets = $validated['today_taken_wickets'];
+        } else {
+            return response()->json(['message' => 'Invalid player type'], 400);
+        }
+
+        $playerScore->save();
+
         return response()->json(['message' => 'Player Score updated successfully', 'UpdateScore' => $playerScore]);
     }
+
 
     /**
      * Show the form for editing the specified resource.
