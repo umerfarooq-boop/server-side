@@ -19,6 +19,7 @@ use App\Http\Controllers\PlayerParentController;
 use App\Http\Controllers\CoachScheduleController;
 use App\Http\Controllers\SportCategoryController;
 use App\Http\Controllers\FeatureServiceController;
+use App\Http\Controllers\EditAppointmentController;
 use App\Http\Controllers\FrequentlyQuestionController;
 
 Route::get('/user', function (Request $request) {
@@ -208,5 +209,6 @@ Route::resources([
     'feedbackform' => FeedbackFormController::class,
     'attendance' => AttendanceController::class,
     'playerscore' => PlayerScoreCotroller::class,
+    'edit_appointment' => EditAppointmentController::class
 ]);
 

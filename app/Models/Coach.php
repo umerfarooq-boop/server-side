@@ -20,6 +20,10 @@ class Coach extends Model
         'status',
     ];
 
+    public function editappointment(){
+        return $this->hasMany(EditAppointment::class,'coach_id','id');
+    }
+
     public function playerScore(){
         return $this->hasMany(PlayerScore::class,'coach_id','id');
     }

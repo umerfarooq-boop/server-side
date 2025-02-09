@@ -7,6 +7,7 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\CoachSchedule;
 use Illuminate\Support\Carbon;
+use App\Models\EditAppointment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -200,10 +201,10 @@ class CoachScheduleController extends Controller
         $validated = $request->validate([
             'to_date' => 'required|date',
             'from_date' => 'required|date',
-            'end_time'  => 'required',
-            'booking_slot'  => 'required',
-            'event_name'  => 'required',
-            'start_time'  => 'required',
+            'end_time' => 'required',
+            'booking_slot' => 'required',
+            'event_name' => 'required',
+            'start_time' => 'required',
         ]);
 
         // Find the coach schedule
@@ -212,27 +213,65 @@ class CoachScheduleController extends Controller
         if (!$coach) {
             return response()->json([
                 'status' => false,
-                'message' => 'Record not found.',
+                'message' => 'Coach schedule not found.',
             ], 404);
         }
 
-        // Update fields
-        $coach->to_date = $validated['to_date'];
-        $coach->from_date = $validated['from_date'];
-        $coach->end_time = $validated['end_time'];
-        $coach->booking_slot = $validated['booking_slot'];
-        $coach->event_name = $validated['event_name'];
-        $coach->start_time = $validated['start_time'];
-        $coach->status = 'processing';
-        $coach->save();
+        // Check if an appointment already exists for the player
+        $existingAppointment = EditAppointment::where('player_id', $coach->player_id)->first();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Record updated successfully.',
-            'coach' => $coach,
-        ], 200);
+        if ($existingAppointment) {
+            // Update the existing appointment
+            $existingAppointment->coach_id = $coach->coach_id;
+            $existingAppointment->to_date = $validated['to_date'];
+            $existingAppointment->from_date = $validated['from_date'];
+            $existingAppointment->end_time = $validated['end_time'];
+            $existingAppointment->booking_slot = $validated['booking_slot'];
+            $existingAppointment->event_name = $validated['event_name'];
+            $existingAppointment->start_time = $validated['start_time'];
+            $existingAppointment->coach_schedule_id = $coach->id;
+            $existingAppointment->status = 'processing';
+            $existingAppointment->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Appointment updated successfully!',
+                'editcoach' => $existingAppointment,
+            ], 200);
+        } else {
+            // Create a new appointment
+            $newAppointment = new EditAppointment();
+            $newAppointment->player_id = $coach->player_id;
+            $newAppointment->coach_id = $coach->coach_id;
+            $newAppointment->to_date = $validated['to_date'];
+            $newAppointment->from_date = $validated['from_date'];
+            $newAppointment->end_time = $validated['end_time'];
+            $newAppointment->booking_slot = $validated['booking_slot'];
+            $newAppointment->event_name = $validated['event_name'];
+            $newAppointment->start_time = $validated['start_time'];
+            $newAppointment->coach_schedule_id = $coach->id;
+            $newAppointment->status = 'processing';
+            $newAppointment->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Appointment created successfully!',
+                'editcoach' => $newAppointment,
+            ], 200);
+        }
     }
 
+
+
+    // Update fields
+        // $coach->to_date = $validated['to_date'];
+        // $coach->from_date = $validated['from_date'];
+        // $coach->end_time = $validated['end_time'];
+        // $coach->booking_slot = $validated['booking_slot'];
+        // $coach->event_name = $validated['event_name'];
+        // $coach->start_time = $validated['start_time'];
+        // $coach->status = 'processing';
+        // $coach->save();
 
 
     /**

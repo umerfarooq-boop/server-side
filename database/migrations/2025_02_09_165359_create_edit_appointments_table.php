@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('coach_schedules', function (Blueprint $table) {
+        Schema::create('edit_appointments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('coach_id');
-            $table->unsignedBigInteger('player_id');
+            $table->unsignedBigInteger('coach_schedule_id')->nullable();
+            $table->unsignedBigInteger('coach_id')->nullable();
+            $table->unsignedBigInteger('player_id')->nullable();
             $table->time('start_time'); // Change this to time
             $table->time('end_time');   // Change this to time if only storing time
             $table->date('to_date');
@@ -22,15 +23,16 @@ return new class extends Migration
             $table->unsignedBigInteger('booking_slot')->nullable();
             $table->string('event_name');
             $table->string('status')->default('processing');
+
             $table->timestamps();
         });
     }
-// ALTER TABLE `coach_schedules` CHANGE `booking_slot` `booking_slot` BIGINT(20) UNSIGNED NOT NULL;
+
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('coach_schedules');
+        Schema::dropIfExists('edit_appointments');
     }
 };

@@ -11,6 +11,10 @@ class SportCategory extends Model
 
     protected $fillable = ['name','status','created_by'];
 
+    public function editappointment(){
+        return $this->hasMany(EditAppointment::class,'booking_slot','id');
+    }
+
     public function coachSchedule(){
         return $this->hasOne(CoachSchedule::class,'booking_slot','id');
     }

@@ -25,6 +25,10 @@ class player extends Model
         'location',
     ];
 
+    public function editappointment(){
+        return $this->hasMany(EditAppointment::class,'player_id','id');
+    }
+
     public function playerScore(){
         return $this->hasMany(PlayerScore::class,'player_id','id');
     }
