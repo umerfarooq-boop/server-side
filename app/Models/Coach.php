@@ -20,6 +20,14 @@ class Coach extends Model
         'status',
     ];
 
+    public function request_equipment(){
+        return $this->belongsTo(Request_Equipment::class,'coach_id','id');
+    }
+
+    public function assignEquipment(){
+        return $this->hasMany(AssignEquipment::class,'coach_id','id');
+    }
+
     public function editappointment(){
         return $this->hasMany(EditAppointment::class,'coach_id','id');
     }

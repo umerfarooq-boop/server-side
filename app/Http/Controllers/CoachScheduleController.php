@@ -111,15 +111,63 @@ class CoachScheduleController extends Controller
 
     // here i can paste the code that is appointment accept table data insert in table
 
-    public function AcceptRequest($id) {
+    // public function AcceptRequest($id) {
+    //     $coach = CoachSchedule::find($id);
+    //     if (!$coach) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Coach schedule not found.'
+    //         ], 404);
+    //     }
+    
+    //     if ($coach->status === 'processing') {
+    //         $coach->status = 'booked';
+    //     } else {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Status update not allowed.'
+    //         ], 400);
+    //     }
+    
+    //     $coach->save();
+    
+    //     $startDate = Carbon::parse($coach->start_date);
+    //     $endDate = Carbon::parse($coach->end_date);     
+    
+    //     for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+    //         Attendence::updateOrCreate(
+    //             [
+    //                 'date' => $date->toDateString(),
+    //                 'coach_id' => $coach->coach_id,
+    //                 'player_id' => $coach->player_id,
+    //                 'appointment_id' => $coach->id,
+    //             ],
+    //             [
+    //                 'start_time' => Carbon::parse($coach->start_time),
+    //                 'end_time' => Carbon::parse($coach->end_time),
+    //                 'attendance_status' => null
+    //             ]
+    //         );
+    //     }
+    
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Status Updated Successfully',
+    //         'updateStatus' => $coach
+    //     ], 200);
+    // }
+
+    public function AcceptRequest($id)
+    {
         $coach = CoachSchedule::find($id);
+
         if (!$coach) {
             return response()->json([
                 'status' => false,
                 'message' => 'Coach schedule not found.'
             ], 404);
         }
-    
+
         if ($coach->status === 'processing') {
             $coach->status = 'booked';
         } else {
@@ -128,34 +176,41 @@ class CoachScheduleController extends Controller
                 'message' => 'Status update not allowed.'
             ], 400);
         }
-    
+
         $coach->save();
-    
-        $startDate = Carbon::parse($coach->start_date);
-        $endDate = Carbon::parse($coach->end_date);     
-    
-        for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-            Attendence::updateOrCreate(
-                [
-                    'date' => $date->toDateString(),
-                    'coach_id' => $coach->coach_id,
-                    'player_id' => $coach->player_id,
-                    'appointment_id' => $coach->id,
-                ],
-                [
-                    'start_time' => Carbon::parse($coach->start_time),
-                    'end_time' => Carbon::parse($coach->end_time),
-                    'attendance_status' => null
-                ]
-            );
+
+        // Delete previous attendance records for the player and coach
+        Attendence::where('player_id', $coach->player_id)
+            ->where('coach_id', $coach->coach_id)
+            ->delete();
+
+        $startDate = Carbon::parse($coach->from_date);
+        $endDate = Carbon::parse($coach->to_date);
+
+        // Loop through the date range and create new attendance records
+        while ($startDate->lte($endDate)) {
+            Attendence::create([
+                'date' => $startDate->toDateString(),
+                'start_time' => $coach->start_time,
+                'end_time' => $coach->end_time,
+                'to_date' => $coach->to_date,
+                'from_date' => $coach->from_date,
+                'attendance_status' => null, // Default status
+                'coach_id' => $coach->coach_id,
+                'appointment_id' => $coach->id,
+                'player_id' => $coach->player_id,
+            ]);
+
+            $startDate->addDay(); // Move to the next day
         }
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Status Updated Successfully',
             'updateStatus' => $coach
         ], 200);
     }
+
     
 
 

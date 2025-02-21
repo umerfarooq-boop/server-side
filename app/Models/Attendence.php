@@ -9,7 +9,7 @@ class Attendence extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['start_time','end_time','date','attendance_status','coach_id','appointment_id','player_id'];
+    protected $fillable = ['start_time','end_time','date','to_date','from_date','attendance_status','coach_id','appointment_id','player_id'];
 
     public function coach(){
         return $this->belongsTo(Coach::class,'coach_id');

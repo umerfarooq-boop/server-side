@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendence;
 use App\Models\PlayerScore;
 use Illuminate\Http\Request;
 
@@ -27,39 +28,65 @@ class PlayerScoreCotroller extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'player_id' => 'nullable|integer',
-            'coach_id' => 'nullable',
-            'player_type' => 'string',
-            'played_over' => 'nullable|integer',
-            'today_give_wickets' => 'nullable|integer',
-            'through_over' => 'nullable|integer',
-            'today_taken_wickets' => 'nullable|integer',
-            'score_status' => 'nullable|string',
-        ]);
-        if (empty($validated['date'])) {
-            $validated['date'] = now()->toDateString(); // Sets current date if no date is provided
-        }
+{
+    $validated = $request->validate([
+        'player_id' => 'required|integer', // Player ID is required
+        'coach_id' => 'required|integer', // Coach ID is required
+        'player_type' => 'required|string', // Player type is required
+        'played_over' => 'nullable|integer',
+        'today_give_wickets' => 'nullable|integer',
+        'through_over' => 'nullable|integer',
+        'today_taken_wickets' => 'nullable|integer',
+        'score_status' => 'nullable|string',
+    ]);
 
-        $validated['coach_id'] = $request->coach_id;
-        $validated['player_id'] = $request->player_id;
+    // Set default date to today
+    $date = now()->toDateString();
 
-        $existingRecord = PlayerScore::where('player_id', $validated['player_id'])
-        ->whereDate('date', $validated['date'])
+    // 🔹 Check if attendance exists and attendance_status is set
+    $attendance = Attendence::where('player_id', $validated['player_id'])
+        ->whereDate('date', $date)
+        ->whereNotNull('attendance_status')
+        ->where('attendance_status', '!=', '') // Ensure it's not an empty string
+        ->first();
+
+    if (!$attendance) {
+        return response()->json([
+            'success' => false,
+            'message' => "Attendance is missing! Please mark today's attendance first.",
+        ], 402);
+    }
+
+    // 🔹 Check if a score record already exists for today
+    $existingRecord = PlayerScore::where('player_id', $validated['player_id'])
+        ->whereDate('date', $date)
         ->first();
 
     if ($existingRecord) {
         return response()->json([
-            "message" => "A record for this player already exists today.",
+            'message' => 'A score record for this player already exists today.',
         ], 400);
     }
 
+    // 🔹 Create and save the player score record
+    $playerEnterScore = new PlayerScore();
+    $playerEnterScore->player_id = $validated['player_id'];
+    $playerEnterScore->coach_id = $validated['coach_id'];
+    $playerEnterScore->player_type = $validated['player_type'];
+    $playerEnterScore->played_over = $request->played_over;
+    $playerEnterScore->today_give_wickets = $request->today_give_wickets;
+    $playerEnterScore->through_over = $request->through_over;
+    $playerEnterScore->today_taken_wickets = $request->today_taken_wickets;
+    $playerEnterScore->score_status = $request->score_status;
+    $playerEnterScore->date = $date;
+    $playerEnterScore->save();
 
-        $playerScore = PlayerScore::create($validated);
+    return response()->json([
+        'message' => 'Player Score created successfully.',
+        'data' => $playerEnterScore,
+    ]);
+}
 
-        return response()->json(["message" => "Player Score created successfully", "data" => $playerScore]);
-    }
 
     /**
      * Display the specified resource.

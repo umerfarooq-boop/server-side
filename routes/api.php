@@ -19,8 +19,10 @@ use App\Http\Controllers\PlayerParentController;
 use App\Http\Controllers\CoachScheduleController;
 use App\Http\Controllers\SportCategoryController;
 use App\Http\Controllers\FeatureServiceController;
+use App\Http\Controllers\AssignEquipmentController;
 use App\Http\Controllers\EditAppointmentController;
 use App\Http\Controllers\FrequentlyQuestionController;
+use App\Http\Controllers\Request_EquipmentController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -192,6 +194,14 @@ Route::get('/EditPlayerRecord/{id}',[PlayerScoreCotroller::class,'EditPlayerReco
 Route::post('/UpdateScore/{id}',[PlayerScoreCotroller::class,'UpdateScore']);
 // Update Score
 
+// AcceptEditAppointment
+Route::get('/AcceptEditAppointment/{id}',[EditAppointmentController::class,'AcceptEditAppointment']);
+// AcceptEditAppointment
+
+// Accept Equipment Request
+Route::get('/AcceptEquipmentRequest/{id}',[Request_EquipmentController::class,'AcceptEquipmentRequest']);
+// Accept Equipment Request
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
@@ -209,6 +219,8 @@ Route::resources([
     'feedbackform' => FeedbackFormController::class,
     'attendance' => AttendanceController::class,
     'playerscore' => PlayerScoreCotroller::class,
-    'edit_appointment' => EditAppointmentController::class
+    'edit_appointment' => EditAppointmentController::class,
+    'assign_equipment' => AssignEquipmentController::class,
+    'request_equipment' => Request_EquipmentController::class,
 ]);
 
