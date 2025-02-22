@@ -94,7 +94,7 @@ class Request_EquipmentController extends Controller
             ], 404);
         }
     
-        if ($acceptRequest->equipment_status === 'accept') {
+        if ($acceptRequest->equipment_status === 'active') {
             return response()->json([
                 'success' => false,
                 'message' => 'This request has already been accepted.'
@@ -122,7 +122,7 @@ class Request_EquipmentController extends Controller
         $equipment->equipment_quantity -= 1;
         $equipment->save();
     
-        $acceptRequest->equipment_status = 'accept';
+        $acceptRequest->equipment_status = 'active';
     
         // Save the request status change
         $acceptRequest->save();
@@ -136,6 +136,15 @@ class Request_EquipmentController extends Controller
         ], 200);
     }
     
+
+    public function DeleteEquipmentRequest($id){
+        $equipment = Request_Equipment::find($id);
+        $equipment->delete();
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Record Delete Successfully'
+        ],201);
+    }
     
     
 

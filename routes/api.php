@@ -202,6 +202,10 @@ Route::get('/AcceptEditAppointment/{id}',[EditAppointmentController::class,'Acce
 Route::get('/AcceptEquipmentRequest/{id}',[Request_EquipmentController::class,'AcceptEquipmentRequest']);
 // Accept Equipment Request
 
+// DeleteEquipmentRequest
+Route::get('/DeleteEquipmentRequest/{id}',[Request_EquipmentController::class,'DeleteEquipmentRequest']);
+// DeleteEquipmentRequest
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
