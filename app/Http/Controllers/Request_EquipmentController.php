@@ -119,7 +119,7 @@ class Request_EquipmentController extends Controller
         }
     
         // Update the equipment quantity by reducing it by 1
-        $equipment->equipment_quantity -= 1;
+        $equipment->equipment_quantity -= $equipment->equipment_quantity;
         $equipment->save();
     
         $acceptRequest->equipment_status = 'active';
