@@ -206,6 +206,10 @@ Route::get('/AcceptEquipmentRequest/{id}',[Request_EquipmentController::class,'A
 Route::get('/DeleteEquipmentRequest/{id}',[Request_EquipmentController::class,'DeleteEquipmentRequest']);
 // DeleteEquipmentRequest
 
+// Return Equipment
+Route::get('/ReturnEquipment/{id}',[Request_EquipmentController::class,'ReturnEquipment']);
+// Return Equipment
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,

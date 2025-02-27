@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\AssignEquipment;
 use App\Models\Request_Equipment;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class Request_EquipmentController extends Controller
@@ -32,133 +32,156 @@ class Request_EquipmentController extends Controller
     {
         // Validate input data
         $validation = Validator::make($request->all(), [
-            'player_id' => 'required',
+            'player_id' => '',
             'coach_id' => 'required',
-            'equipment_name_id' => 'required',
-            'equipment_quantity' => [
+            'equipment' => 'required|array',
+            'equipment.*.equipment_name_id' => 'required|exists:assign_equipment,id',
+            'equipment.*.equipment_quantity' => [
                 'required',
                 'integer',
                 'min:1',
                 function ($attribute, $value, $fail) use ($request) {
-                    $availableQuantity = AssignEquipment::where('id', $request->equipment_name_id)->value('equipment_quantity');
+                    preg_match('/\d+/', $attribute, $matches);
+                    $index = $matches[0];
+                    $equipmentId = $request->equipment[$index]['equipment_name_id'];
+                    $availableQuantity = AssignEquipment::where('id', $equipmentId)->value('equipment_quantity');
                     if ($value > $availableQuantity) {
                         $fail("The $attribute must not exceed the available quantity ($availableQuantity).");
                     }
                 },
             ],
-            'equipment_status' => 'required',
             'return_date_time' => 'required|date_format:Y-m-d H:i:s|after:now',
         ]);
-    
+
         if ($validation->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Record not added successfully.',
+                'message' => 'Validation failed.',
                 'errors' => $validation->errors(),
             ], 422);
         }
-    
-        $equipment = new Request_Equipment();
-        $equipment->player_id = $request->player_id;
-        $equipment->coach_id = $request->coach_id;
-        $equipment->equipment_name_id = $request->equipment_name_id;
-        $equipment->equipment_quantity = $request->equipment_quantity;
-        $equipment->equipment_status = "reject";
- 
-        $equipment->now_date_time = now(); 
-    
-        $equipment->return_date_time = $request->return_date_time;
-    
-        if ($equipment->save()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Record saved successfully.',
-                'equipment' => $equipment,
-            ], 201);
+
+        foreach ($request->equipment as $equip) {
+            Request_Equipment::create([
+                'player_id' => $request->player_id,
+                'coach_id' => $request->coach_id,
+                'equipment_name_id' => $equip['equipment_name_id'],
+                'equipment_quantity' => $equip['equipment_quantity'],
+                'equipment_status' => "reject",
+                'now_date_time' => now(),
+                'return_date_time' => $request->return_date_time,
+            ]);
         }
-    
+
         return response()->json([
-            'success' => false,
-            'message' => 'Failed to save the record. Please try again later.',
-        ], 500);
+            'success' => true,
+            'message' => 'Equipment requested successfully.',
+        ], 201);
     }
-    
-    
+
     public function AcceptEquipmentRequest($id)
     {
         $acceptRequest = Request_Equipment::find($id);
         if (!$acceptRequest) {
             return response()->json([
                 'success' => false,
-                'message' => 'Equipment request not found.'
+                'message' => 'Equipment request not found.',
             ], 404);
         }
-    
+
         if ($acceptRequest->equipment_status === 'active') {
             return response()->json([
                 'success' => false,
-                'message' => 'This request has already been accepted.'
+                'message' => 'This request has already been accepted.',
             ], 400);
         }
-    
+
         $equipment = AssignEquipment::where('id', $acceptRequest->equipment_name_id)->first();
-    
+
         // Check if the equipment exists
         if (!$equipment) {
             return response()->json([
                 'success' => false,
-                'message' => 'Assigned equipment not found.'
+                'message' => 'Assigned equipment not found.',
             ], 404);
         }
-    
-        if ($equipment->equipment_quantity <= 0) {
+
+        // Check if there's enough equipment available
+        if ($equipment->equipment_quantity < $acceptRequest->equipment_quantity) {
             return response()->json([
                 'success' => false,
-                'message' => 'Insufficient equipment quantity available.'
+                'message' => 'Insufficient equipment quantity available.',
             ], 400);
         }
-    
-        // Update the equipment quantity by reducing it by 1
-        $equipment->equipment_quantity -= $equipment->equipment_quantity;
+
+        // Reduce the equipment quantity by the requested amount
+        $equipment->equipment_quantity -= $acceptRequest->equipment_quantity;
         $equipment->save();
-    
+
+        // Mark the request as active
         $acceptRequest->equipment_status = 'active';
-    
-        // Save the request status change
         $acceptRequest->save();
-    
+
         // Return the response
         return response()->json([
             'success' => true,
             'message' => 'Your request has been accepted.',
             'acceptRequest' => $acceptRequest,
-            'equipment' => $equipment
+            'equipment' => $equipment,
+        ], 200);
+    }
+    public function ReturnEquipment($id)
+    {
+        $equipmentRequest = Request_Equipment::find($id);
+        
+        if (!$equipmentRequest) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Record Not Found',
+            ], 404);
+        }
+    
+        // Find the assigned equipment based on equipment_name_id
+        $assignedEquipment = AssignEquipment::where('id', $equipmentRequest->equipment_name_id)->first();
+    
+        if ($assignedEquipment) {
+            // Update quantity
+            $assignedEquipment->equipment_quantity += $equipmentRequest->equipment_quantity;
+            $assignedEquipment->save();
+        }
+    
+        // Delete the request record
+        $equipmentRequest->delete();
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Equipment returned successfully',
+            'updated_quantity' => $assignedEquipment ? $assignedEquipment->equipment_quantity : null,
         ], 200);
     }
     
 
-    public function DeleteEquipmentRequest($id){
+    public function DeleteEquipmentRequest($id)
+    {
         $equipment = Request_Equipment::find($id);
         $equipment->delete();
         return response()->json([
-            'success'  => true,
-            'message'  => 'Record Delete Successfully'
-        ],201);
+            'success' => true,
+            'message' => 'Record Delete Successfully',
+        ], 201);
     }
-    
-    
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $equipment = Request_Equipment::with(['coach','player','equipment'])->where('coach_id',$id)->get();
+        $equipment = Request_Equipment::with(['coach', 'player', 'equipment'])->where('coach_id', $id)->get();
         return response()->json([
-            'success'   => true,
-            'message'   => 'Record Get Successfully',
-            'requestequipment' => $equipment
-        ],201);
+            'success' => true,
+            'message' => 'Record Get Successfully',
+            'requestequipment' => $equipment,
+        ], 201);
     }
 
     /**

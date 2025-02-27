@@ -9,7 +9,7 @@ class Request_Equipment extends Model
 {
     use HasFactory;
 
-    protected $fillables = ['player_id','coach_id','equipment_name_id','equipment_quantity','equipment_status'];
+    protected $fillable = ['player_id','coach_id','equipment_name_id','equipment_quantity','equipment_status','return_date_time','now_date_time'];
 
     public function player(){
         return $this->belongsTo(player::class,'player_id');
