@@ -130,10 +130,12 @@ class Request_EquipmentController extends Controller
             'equipment' => $equipment,
         ], 200);
     }
-    public function ReturnEquipment($id)
+
+
+    public function ReturnEquipment($id, Request $request)
     {
         $equipmentRequest = Request_Equipment::find($id);
-        
+    
         if (!$equipmentRequest) {
             return response()->json([
                 'success' => false,
@@ -141,24 +143,42 @@ class Request_EquipmentController extends Controller
             ], 404);
         }
     
+        $returnedQuantity = $request->input('quantity');
+        if ($returnedQuantity > $equipmentRequest->equipment_quantity) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Returned quantity exceeds the requested quantity.',
+            ], 400);
+        }
+    
         // Find the assigned equipment based on equipment_name_id
         $assignedEquipment = AssignEquipment::where('id', $equipmentRequest->equipment_name_id)->first();
     
         if ($assignedEquipment) {
-            // Update quantity
-            $assignedEquipment->equipment_quantity += $equipmentRequest->equipment_quantity;
+            // Update the quantity in AssignEquipment
+            $assignedEquipment->equipment_quantity += $returnedQuantity;
             $assignedEquipment->save();
         }
     
-        // Delete the request record
-        $equipmentRequest->delete();
+        // Update the remaining quantity in Request_Equipment
+        $remainingQuantity = $equipmentRequest->equipment_quantity - $returnedQuantity;
+        if ($remainingQuantity > 0) {
+            $equipmentRequest->equipment_quantity = $remainingQuantity;
+            $equipmentRequest->save();
+        } else {
+            // Delete the request if all equipment is returned
+            $equipmentRequest->delete();
+        }
     
         return response()->json([
             'success' => true,
             'message' => 'Equipment returned successfully',
             'updated_quantity' => $assignedEquipment ? $assignedEquipment->equipment_quantity : null,
+            'remaining_quantity' => $remainingQuantity,
         ], 200);
     }
+    
+
     
 
     public function DeleteEquipmentRequest($id)

@@ -21,8 +21,9 @@ use App\Http\Controllers\SportCategoryController;
 use App\Http\Controllers\FeatureServiceController;
 use App\Http\Controllers\AssignEquipmentController;
 use App\Http\Controllers\EditAppointmentController;
-use App\Http\Controllers\FrequentlyQuestionController;
+use App\Http\Controllers\ReturnEquipmentController;
 use App\Http\Controllers\Request_EquipmentController;
+use App\Http\Controllers\FrequentlyQuestionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -207,7 +208,7 @@ Route::get('/DeleteEquipmentRequest/{id}',[Request_EquipmentController::class,'D
 // DeleteEquipmentRequest
 
 // Return Equipment
-Route::get('/ReturnEquipment/{id}',[Request_EquipmentController::class,'ReturnEquipment']);
+Route::post('/ReturnEquipment/{id}',[Request_EquipmentController::class,'ReturnEquipment']);
 // Return Equipment
 
 Route::resources([
@@ -230,5 +231,6 @@ Route::resources([
     'edit_appointment' => EditAppointmentController::class,
     'assign_equipment' => AssignEquipmentController::class,
     'request_equipment' => Request_EquipmentController::class,
+    'return_equipment' => ReturnEquipmentController::class,
 ]);
 

@@ -20,6 +20,10 @@ class Coach extends Model
         'status',
     ];
 
+    public function returnequipment(){
+        return $thsi->hasMany(ReturnEquipment::class,'coach_id','id');
+    }
+
     public function request_equipment(){
         return $this->belongsTo(Request_Equipment::class,'coach_id','id');
     }
