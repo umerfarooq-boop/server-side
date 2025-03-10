@@ -211,6 +211,10 @@ Route::get('/DeleteEquipmentRequest/{id}',[Request_EquipmentController::class,'D
 Route::post('/ReturnEquipment/{id}',[Request_EquipmentController::class,'ReturnEquipment']);
 // Return Equipment
 
+// Show Return Equipment
+Route::get('/show_return_equipment/{id}',[Request_EquipmentController::class,'show_return_equipment']);
+// Show Return Equipment
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,

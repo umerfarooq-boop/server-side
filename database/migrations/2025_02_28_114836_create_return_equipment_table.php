@@ -15,13 +15,15 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('player_id')->nullable();
             $table->unsignedBigInteger('coach_id')->nullable();
-            $table->string('equipment_name')->nullable();
-            $table->integer('quantity')->nullable();
+            $table->unsignedBigInteger('equipment_name')->nullable();
+            $table->unsignedBigInteger('quantity')->nullable();
+            $table->unsignedBigInteger('equipment_request_id')->nullable();
             $table->dateTime('return_date_time')->nullable();
             $table->string('return_note')->nullable();
             $table->timestamps();
         });
     }
+    // ALTER TABLE `return_equipment` CHANGE `equipment_name` `equipment_name` INT(220) NULL DEFAULT NULL;
 
     /**
      * Reverse the migrations.

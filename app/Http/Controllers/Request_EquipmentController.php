@@ -131,10 +131,19 @@ class Request_EquipmentController extends Controller
         ], 200);
     }
 
+    public function show_return_equipment($id){
+        $equipment_return = Request_Equipment::with(['player','coach','equipment'])->where('id',$id)->first();
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Found',
+            'equipment_return'  => $equipment_return
+        ],201);
+    }
+
 
     public function ReturnEquipment($id, Request $request)
     {
-        $equipmentRequest = Request_Equipment::find($id);
+        $equipmentRequest = Request_Equipment::find($id); // here it get id of mysql table request__equipment mean match id
     
         if (!$equipmentRequest) {
             return response()->json([
@@ -143,7 +152,7 @@ class Request_EquipmentController extends Controller
             ], 404);
         }
     
-        $returnedQuantity = $request->input('quantity');
+        $returnedQuantity = $request->input('equipment_quantity');
         if ($returnedQuantity > $equipmentRequest->equipment_quantity) {
             return response()->json([
                 'success' => false,

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ReturnEquipment extends Model
 {
     use HasFactory;
-    protected $fillable = ['player_id','coach_id','equipment_name','quantity','return_note','return_date_time'];
+    protected $fillable = ['player_id','coach_id','equipment_name','quantity','return_note','return_date_time','equipment_request_id'];
 
     public function player(){
         return $this->belongsTo(player::class,'player_id');
