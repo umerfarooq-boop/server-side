@@ -30,16 +30,18 @@ class ReturnEquipmentController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'player_id' => 'required|exists:players,id',
-            'coach_id'  => 'required|exists:coaches,id',
-            'equipment_name'  => 'required|string',
-            'quantity'  => 'required|integer|min:1',
-            'return_note'  => 'nullable|string',
-            'return_date_time'  => 'nullable|date',
+            'player_id'            => 'required',
+            'coach_id'             => 'required',
+            'equipment_name'       => 'required',
+            'quantity'             => 'required|integer|min:1',
+            'return_note'          => 'nullable|string',
+            'return_date_time'     => 'nullable|date',
+            'equipment_request_id' => 'required', // Fix: Ensure request exists
         ]);
     
-        // Get the original request from Request_Equipment table
-        $equipmentRequest = Request_Equipment::where('player_id', $validatedData['player_id'])
+        // Fetch the original request
+        $equipmentRequest = Request_Equipment::where('id', $validatedData['equipment_request_id'])
+                            ->where('player_id', $validatedData['player_id'])
                             ->where('equipment_name_id', $validatedData['equipment_name'])
                             ->first();
     
@@ -61,10 +63,10 @@ class ReturnEquipmentController extends Controller
         $returnEquipment = new ReturnEquipment();
         $returnEquipment->player_id = $validatedData['player_id'];
         $returnEquipment->coach_id = $validatedData['coach_id'];
-        $returnEquipment->equipment_name = $validatedData['equipment_name'];
+        $returnEquipment->equipment_name = $validatedData['equipment_name']; // Fix: Use ID
         $returnEquipment->quantity = $validatedData['quantity'];
         $returnEquipment->return_note = $validatedData['return_note'];
-        $returnEquipment->equipment_request_id = $request->equipment_request_id;
+        $returnEquipment->equipment_request_id = $validatedData['equipment_request_id'];
         $returnEquipment->return_date_time = $validatedData['return_date_time'] ?? now();
         $returnEquipment->save();
     
@@ -74,6 +76,7 @@ class ReturnEquipmentController extends Controller
             'returnEquipment' => $returnEquipment
         ], 201);
     }
+    
     
     
 

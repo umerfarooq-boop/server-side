@@ -200,7 +200,7 @@ Route::get('/AcceptEditAppointment/{id}',[EditAppointmentController::class,'Acce
 // AcceptEditAppointment
 
 // Accept Equipment Request
-Route::get('/AcceptEquipmentRequest/{id}',[Request_EquipmentController::class,'AcceptEquipmentRequest']);
+Route::post('/AcceptEquipmentRequest/{id}',[Request_EquipmentController::class,'AcceptEquipmentRequest']);
 // Accept Equipment Request
 
 // DeleteEquipmentRequest

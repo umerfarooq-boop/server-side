@@ -79,66 +79,99 @@ class Request_EquipmentController extends Controller
         ], 201);
     }
 
-    public function AcceptEquipmentRequest($id)
+    public function AcceptEquipmentRequest(Request $request,$id)
     {
         $acceptRequest = Request_Equipment::find($id);
+        // return $acceptRequest;
         if (!$acceptRequest) {
             return response()->json([
                 'success' => false,
                 'message' => 'Equipment request not found.',
             ], 404);
         }
-
+    
+        // Check if already accepted
         if ($acceptRequest->equipment_status === 'active') {
             return response()->json([
                 'success' => false,
                 'message' => 'This request has already been accepted.',
             ], 400);
         }
-
+    
         $equipment = AssignEquipment::where('id', $acceptRequest->equipment_name_id)->first();
-
-        // Check if the equipment exists
+    
         if (!$equipment) {
             return response()->json([
                 'success' => false,
                 'message' => 'Assigned equipment not found.',
             ], 404);
         }
-
-        // Check if there's enough equipment available
+    
+        // Check if enough equipment is available
         if ($equipment->equipment_quantity < $acceptRequest->equipment_quantity) {
             return response()->json([
                 'success' => false,
                 'message' => 'Insufficient equipment quantity available.',
             ], 400);
         }
-
-        // Reduce the equipment quantity by the requested amount
-        $equipment->equipment_quantity -= $acceptRequest->equipment_quantity;
+    
+        // Deduct the requested quantity
+        $equipment->equipment_quantity -= $request->equipment_quantity;
         $equipment->save();
-
-        // Mark the request as active
+    
+        // Mark the request as accepted
         $acceptRequest->equipment_status = 'active';
+        $acceptRequest->equipment_quantity = $request->equipment_quantity;
         $acceptRequest->save();
-
-        // Return the response
+    
         return response()->json([
             'success' => true,
-            'message' => 'Your request has been accepted.',
-            'acceptRequest' => $acceptRequest,
-            'equipment' => $equipment,
+            'message' => 'Equipment request has been accepted.',
+            'acceptRequest' => [
+                'id' => $acceptRequest->id,
+                'player_name' => $acceptRequest->player->player_name,
+                'equipment_name' => $equipment->equipment_name,
+                'equipment_quantity' => $acceptRequest->equipment_quantity,
+                'return_date_time' => $acceptRequest->return_date_time,
+                'equipment_status' => $acceptRequest->equipment_status,
+            ],
+            'remaining_equipment_quantity' => $equipment->equipment_quantity,
         ], 200);
     }
+    
 
-    public function show_return_equipment($id){
-        $equipment_return = Request_Equipment::with(['player','coach','equipment'])->where('id',$id)->first();
+    public function show_return_equipment($id) {
+        $equipment_return = Request_Equipment::with(['player', 'coach', 'equipment'])
+            ->where('id', $id)
+            ->first();
+    
+        if (!$equipment_return) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Equipment not found.',
+            ], 404);
+        }
+    
         return response()->json([
             'success' => true,
             'message' => 'Record Found',
-            'equipment_return'  => $equipment_return
-        ],201);
+            'equipment_return' => [
+                'id' => $equipment_return->id,
+                'player_id' => $equipment_return->player_id,
+                'player_name' => $equipment_return->player->player_name, // Show player name
+                'coach_id' => $equipment_return->coach_id,
+                'coach_name' => $equipment_return->coach->name,
+                'equipment_name_id' => $equipment_return->equipment_name_id, // Store equipment ID
+                'equipment_name' => $equipment_return->equipment->equipment_name, // Show equipment name
+                'equipment_quantity' => $equipment_return->equipment_quantity,
+                'equipment_status' => $equipment_return->equipment_status,
+                'return_date_time' => $equipment_return->return_date_time,
+                'created_at' => $equipment_return->created_at,
+                'updated_at' => $equipment_return->updated_at,
+            ],
+        ], 201);
     }
+    
 
 
     public function ReturnEquipment($id, Request $request)
@@ -205,13 +238,32 @@ class Request_EquipmentController extends Controller
      */
     public function show(string $id)
     {
-        $equipment = Request_Equipment::with(['coach', 'player', 'equipment'])->where('coach_id', $id)->get();
+        $equipment = Request_Equipment::with(['coach', 'player', 'equipment'])
+            ->where('coach_id', $id)
+            ->orWhere('id', $id)->orWhere('player_id',$id)
+            ->get();
+    
         return response()->json([
             'success' => true,
-            'message' => 'Record Get Successfully',
-            'requestequipment' => $equipment,
-        ], 201);
+            'message' => 'Record retrieved successfully',
+            'requestequipment' => $equipment->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'player_id' => $item->player_id,
+                    'player_name' => $item->player->player_name, // Show player name
+                    'coach_id' => $item->coach_id,
+                    'equipment_name_id' => $item->equipment_name_id, // Store equipment ID
+                    'equipment_name' => $item->equipment->equipment_name, // Show equipment name
+                    'equipment_quantity' => $item->equipment_quantity,
+                    'equipment_status' => $item->equipment_status,
+                    'return_date_time' => $item->return_date_time,
+                    'created_at' => $item->created_at,
+                    'updated_at' => $item->updated_at,
+                ];
+            }),
+        ], 200);
     }
+    
 
     /**
      * Show the form for editing the specified resource.
