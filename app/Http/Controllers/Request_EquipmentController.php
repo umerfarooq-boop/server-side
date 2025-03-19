@@ -151,7 +151,8 @@ class Request_EquipmentController extends Controller
                 'message' => 'Equipment not found.',
             ], 404);
         }
-    
+    //// 
+    /// kinhg
         return response()->json([
             'success' => true,
             'message' => 'Record Found',
