@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\User;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,6 +34,19 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'remember_token',
     ];
+
+    public function player(){
+        return $this->belongsTo(player::class,'user_id');
+    }
+
+    public function coach(){
+        return $this->belongsTo(Coach::class,'user_id');
+    }
+
+    public function profileData(){
+        return $this->belongsTo(Profile::class,'user_id');
+    }
+
 
     /**
      * Get the attributes that should be cast.

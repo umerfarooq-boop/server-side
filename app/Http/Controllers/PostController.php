@@ -103,7 +103,7 @@ class PostController extends Controller
 
         $post_image = $request->file('post_image');
         $ext = $post_image->getClientOriginalExtension();
-        $post_image_name = time() . '.' . $ext; 
+        $post_image_name = time() . '.' . $ext;     
         $post_image->move(public_path('uploads/coach_posts'),$post_image_name);
 
         $post = new Post();

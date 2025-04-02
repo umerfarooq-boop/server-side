@@ -25,6 +25,10 @@ class player extends Model
         'location',
     ];
 
+    public function user(){
+        return $this->hasMany(User::class,'user_id','id');
+    }
+
     public function returnequipment(){
         return $this->hasMany(ReturnEquipment::class,'player_id','id');
     }

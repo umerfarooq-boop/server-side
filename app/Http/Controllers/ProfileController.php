@@ -38,172 +38,6 @@ class ProfileController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    // public function store(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(),[
-    //         'dob' => 'required',
-    //         'gender' => 'required',
-    //         'role' => 'required',
-    //         'cat_id' => 'required',
-    //         'coach_id' => 'required',
-    //         'player_id' => 'required',
-    //         'parent_id' => 'required',
-    //         'location' => 'required',
-    //         'address' => 'required',
-    //     ]);
-
-    //     if($validator->fails()){
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Record Not Found',
-    //             'errors' => $validator->errors()
-    //         ]);
-    //     }
-
-    //     $profile = new Profile();
-    //     $profile->dob = $request->dob;
-    //     $profile->gender = $request->gender;
-    //     $profile->role = $request->role;
-    //     // $profile->save();
-    //     $profile->cat_id = $request->cat_id;
-    //     // $profile->coach_id = $request->coach_id;
-    //     // $profile->player_id = $request->player_id;
-    //     // $profile->parent_id = $request->parent_id;
-    //     $profile->location = $request->location;
-    //     $profile->address = $request->address;
-    //     $profile->save();
-    //     // Player Code if Role is Player
-
-
-    //     // Start Coach Role
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'profile' => $profile,
-    //         'message' => 'Record added Successfully'
-    //     ]);
-
-    // }
-
-
-
-    // public function store(Request $request)
-    // {
-    //     // Validate basic fields
-    //     $request->validate([
-    //         'dob' => 'required|date',
-    //         'gender' => 'required|string',
-    //         'role' => 'required|string',
-    //         'location' => 'required|string',
-    //         'address' => 'required|string',
-    //         // 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    //     ]);
-
-    //     $profile = new Profile();
-    //     $profile->dob = $request->dob;
-    //     $profile->gender = $request->gender;
-    //     $profile->role = $request->role;
-    //     $profile->location = $request->location;
-    //     $profile->address = $request->address;
-
-    //     $profile->save();
-
-    //     if ($request->role === 'coach' && $request->hasAccademy === 'yes') {
-            
-    //             $coach = new Coach();
-    //             $coach->name = $request->name;
-    //             $coach->category_id = $request->category_id;
-    //             $coach->experience = $request->experience;
-    //             $coach->level = $request->level;
-    //             $coach->phone_number = $request->phone_number;
-    //             $coach->location = $request->location;
-                
-
-    //             // if ($request->hasFile('academy_certificate')) {
-    //                 $certificateName = time() . '_' . $request->file('academy_certificate')->getClientOriginalName();
-    //                 $certificatePath = $request->file('academy_certificate')->storeAs('academy_certificates', $certificateName, 'public');
-    //                 $profile->academy_certificate = $certificatePath;
-
-    //                 $coachCertificate = time() . '_' . $request->file('coach_certificate')->getClientOriginalName();
-    //                 $coachcertificatePath = $request->file('academy_certificate')->storeAs('academy_certificates', $coachCertificate, 'public');
-    //                 // $profile->academy_certificate = $certificatePath;
-
-    //                $coach->certificate = $certificateName;
-
-    //                $coachImage = time() . '_' . $request->file('academy_certificate')->getClientOriginalName();
-    //                $coachPath = $request->file('academy_certificate')->storeAs('academy_certificates', $coachImage, 'public');
-    //                $profile->academy_certificate = $coachPath;
-
-    //                $coach->save();
-    //                $profile->coach_id = $coach->id;
-    //                 $profile->save();
-                
-    //         } else {
-    //             $request->validate(['location' => 'required|string']);
-    //             $profile->location = $request->location;
-    //         }
-        
-
-    //     // Handling player-specific fields
-
-        
-
-    //     if ($request->role === 'player') {
-    //         $request->validate([
-    //             'name' => 'required|string',
-    //             'cat_id' => 'required',
-    //             'playwith' => 'required',
-    //             'gender' => 'required',
-    //             'phone_number' => 'required',
-    //             'dob' => 'required',
-    //             'status' => 'required',
-    //         ]);
-    //         $player = new Player();
-
-    //         $playerImage = $request->file('image');
-    //         $ext = $playerImage->getClientOriginalExtension();
-    //         $playerImage_name = time(). '.'.$ext;
-    //         $img->move(public_path('uploads\academy_certificate'),$playerImage_name);
-
-    //         $player->name = $request->name;
-    //         $player->cat_id = $request->cat_id;
-    //         $player->playwith = $request->playwith;
-    //         $player->gender = $request->gender;
-    //         $player->phone_number = $request->phone_number;
-    //         $player->dob = $request->dob;
-    //         // $profile->player_id = $player->id;
-    //         $profile->cat_id = $player->cat_id;
-    //         // $profile->save();
-
-    //         $parent = new PlayerParent();
-    //         $parent->cnic = $request->cnic;
-    //         $parent->name = $request->name;
-    //         $parent->address = $request->address;
-    //         $parent->player_id = $request->player_id;
-    //         $parent->phone_number = $request->phone_number;
-    //         $parent->location = $request->location;
-    //         $parent->status = $request->status;
-
-    //         $profile->player_id = $player->id;
-    //         $profile->parent_id = $parent->id;
-    //         $parent->save();
-
-    //         // $profile->player_position = $request->player_position;
-    //         // $profile->category_id = $request->cat_id;
-    //     }
-
-    //     $profile->save();
-
-    //     return response()->json([
-    //         'message' => 'Profile created successfully!',
-    //         'success' => true,
-    //         'profile' => $profile,
-    //     ], 201);
-    // }
-
     public function store(Request $request)
     {
         // Validate common fields for all roles
@@ -225,7 +59,7 @@ class ProfileController extends Controller
         $profile->save();
 
         // If the role is 'coach' and they have an academy
-        if ($request->role === 'coach') {
+        if ($request->role === 'coach' || $request->role === 'admin') {
             $request->validate([
                 'name' => 'required|string',
                 'category_id' => 'required|integer',
@@ -293,7 +127,11 @@ class ProfileController extends Controller
             $coach->academy_id = $newacademy->id;
             $coach->save();
             $profile->coach_id = $coach->id;
-            $profile->user_id = $coach->id;
+
+            // here send ID from REQuest form
+
+            // $profile->user_id = $coach->id;
+            $profile->user_id = $request->user_id;
 
         }
 
@@ -331,7 +169,8 @@ class ProfileController extends Controller
             $player->image = $playerimageName;
             $player->save();
             $profile->player_id = $player->id;
-            $profile->user_id = $player->id;
+            // $profile->user_id = $player->id;
+            $profile->user_id = $request->user_id;
         
             $parent = new PlayerParent();
             $parent->cnic = $request->cnic;
@@ -367,6 +206,7 @@ class ProfileController extends Controller
             'profile' => $profile,
             // 'academy' => $newacademy,
             'coach'   => $profile->coach_id ?? null,
+            'player'   => $profile->player_id ?? null,
             'location' => $profile->profile_location ?? null,
         ], 201);
     }
@@ -375,10 +215,15 @@ class ProfileController extends Controller
   // Decode user info from JWT token
     public function getProfileData($id,$role)
     {
-        $user = Profile::with(['user', 'coach', 'player', 'academy','playerParent'])
-        ->where('user_id', $id)
-        ->where('role', $role)
+        $user = Profile::with(['user', 'coach', 'player', 'academy', 'playerParent'])
+        ->where(function ($query) use ($id) {
+            $query->where('user_id', $id)
+                ->orWhere('coach_id', $id)
+                ->orWhere('player_id', $id);
+        })
+        ->where('role', $role) // Corrected `andWhere` to `where`
         ->first();
+
 
         return response()->json([
             'success' => true,

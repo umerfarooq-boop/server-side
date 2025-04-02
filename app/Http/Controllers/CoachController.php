@@ -55,7 +55,7 @@ class CoachController extends Controller
     
     public function changeStatus($id){
         $coach = Coach::find($id);
-        if($coach->status == 'acitve'){
+        if($coach->status == 'active'){
             $coach->status = 'block';
         }else{
             $coach->status = 'active';
@@ -63,7 +63,7 @@ class CoachController extends Controller
         $coach->save();
         return response()->json([
             'status' => true,
-            'message' => 'Status Updated Successfully',
+            'message' => 'Status Updated Successfullylll',
             'user'  => $coach
         ]);
     }

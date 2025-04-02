@@ -27,6 +27,10 @@ class Profile extends Model
         return $this->belongsTo(Profile::class,'player_id');
     }
 
+    public function UserProfile(){
+        return $this->hasMany(User::class,'user_id');
+    }
+
     public function user(){
         return $this->belongsTo(User::class,'user_id');
     }
