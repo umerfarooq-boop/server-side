@@ -215,6 +215,18 @@ Route::post('/ReturnEquipment/{id}',[Request_EquipmentController::class,'ReturnE
 Route::get('/show_return_equipment/{id}',[Request_EquipmentController::class,'show_return_equipment']);
 // Show Return Equipment
 
+// Parent Record According to ID
+Route::get('/getParent/{email}',[PlayerParentController::class,'getParent']);
+// Parent Record According to ID
+
+// Player Attendance To Parent
+Route::get('/ShowAttendance/{id}',[PlayerParentController::class,'ShowAttendance']);
+// Player Attendance To Parent
+
+// Player Score To Parent
+Route::get('/ShowPlayerScore/{id}',[PlayerParentController::class,'ShowPlayerScore']);
+// Player Score To Parent
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,

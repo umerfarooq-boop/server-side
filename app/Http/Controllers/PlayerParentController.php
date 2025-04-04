@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use App\Models\Player;
 use App\Models\PlayerParent;
 use Illuminate\Http\Request;
+use App\Models\CoachSchedule;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 class PlayerParentController extends Controller
@@ -75,7 +77,55 @@ class PlayerParentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $parent_player_record = PlayerParent::with(['player', 'coachschedule', 'player_score', 'player_attendance','playerequipment'])
+        ->where('player_id', $id)
+        ->first();   
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Get Successfully',
+            'parent_player_record' => $parent_player_record
+        ],201);
+    }
+
+    public function ShowAttendance($id)
+    {
+        $player_attendance = PlayerParent::with(['player_attendance' => function($query) {
+            $query->whereIn('attendance_status', ['P', 'L', 'A']);
+        }])
+        ->where('player_id', $id)
+        ->first();
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Get Successfully',
+            'player_attendance' => $player_attendance
+        ], 200);
+    }
+
+    public function ShowPlayerScore($id){
+        $today = Carbon::today();
+        $player_score = PlayerParent::with(['player','player_score.coach','player_score' => function ($query) use ($today) {
+            $query->orderByRaw("DATE(created_at) = ? DESC", [$today]) // Today's first
+                  ->orderBy('created_at', 'desc'); // Then rest by date
+        }])
+        ->where('player_id', $id)
+        ->get();
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Record Get Successfully',
+            'player_score' => $player_score
+        ],201);
+    }
+    
+
+    public function getParent(string $email){
+        $ParentData = PlayerParent::where('email',$email)->first();
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Get Successfully',
+            'ParentData' => $ParentData
+        ],201);
     }
 
     /**

@@ -136,16 +136,19 @@ class PlayerScoreCotroller extends Controller
             $playerScore->today_taken_wickets = $validated['today_taken_wickets'];
             $playerScore->played_over = null;
             $playerScore->today_give_wickets = null;
+            $playerScore->player_type = 'bowler';
         } elseif ($validated['player_type'] === "batsman") {
             $playerScore->played_over = $validated['played_over'];
             $playerScore->today_give_wickets = $validated['today_give_wickets'];
             $playerScore->through_over = null;
             $playerScore->today_taken_wickets = null;
+            $playerScore->player_type = 'batsman';
         } elseif ($validated['player_type'] === "allrounder") {
             $playerScore->played_over = $validated['played_over'];
             $playerScore->today_give_wickets = $validated['today_give_wickets'];
             $playerScore->through_over = $validated['through_over'];
             $playerScore->today_taken_wickets = $validated['today_taken_wickets'];
+            $playerScore->player_type = 'allrounder';
         } else {
             return response()->json(['message' => 'Invalid player type'], 400);
         }
