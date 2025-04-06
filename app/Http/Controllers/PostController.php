@@ -42,6 +42,26 @@ class PostController extends Controller
             "post" => $post
         ]);
     }
+
+
+        // Show Coach Post According to its ID
+
+        public function ShowSignleCoachPost($id){
+            $post = Post::with('coach')->where('coach_id',$id)->orderBy('created_at','desc')->get();
+            if($post->isNotEmpty()){
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Successfully Get Data',
+                    'post'    => $post
+                ],201);
+            }else{
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data Not Found',
+                    'error' => 'Data Not Found According to this ID'
+                ],404);
+            }
+        }        
     
 
 
@@ -148,7 +168,7 @@ class PostController extends Controller
 
     public function showBlogPost($id)
     {
-        $post = Post::with('coach')->where('coach_id', $id)->orderBy('id', 'desc')->paginate(2);
+        $post = Post::with('coach')->where('coach_id', $id)->where('post_status','active')->orderBy('created_at', 'desc')->paginate(2);
 
         if ($post->isEmpty()) {
             return response()->json([
@@ -200,67 +220,69 @@ class PostController extends Controller
     }
 
     public function updatePost(Request $request,$id)
-{
-    $validator = Validator::make($request->all(), [
-        'post_title' => 'required|string|max:255',
-        'post_name' => 'required|string|max:255',
-        'post_description' => 'nullable|string',
-        'post_time' => 'nullable|date',
-        'post_status' => 'required|string',
-        'post_location' => 'nullable|string|max:255',
-        'coach_id' => 'nullable|exists:coaches,id', // Assuming there's a 'coaches' table
-        'post_image' => 'nullable', // Validates uploaded image
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'post_title' => 'required|string|max:255',
+            'post_name' => 'required|string|max:255',
+            'post_description' => 'nullable|string',
+            'post_time' => 'nullable|date',
+            'post_status' => 'required|string',
+            'post_location' => 'nullable|string|max:255',
+            'coach_id' => 'nullable|exists:coaches,id', // Assuming there's a 'coaches' table
+            'post_image' => 'nullable', // Validates uploaded image
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validation errors',
-            'errors' => $validator->errors(),
-        ], 422);
-    }
-
-    // Find the post by ID and coach_id
-    $post = Post::where('id', $id)->where('coach_id', $request->coach_id)->first();
-
-    if (!$post) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Post Not Found',
-        ], 404);
-    }
-
-    // Handle file upload if a new image is provided
-    if ($request->hasFile('post_image')) {
-        $post_image = $request->file('post_image');
-        $post_image_name = time() . '.' . $post_image->getClientOriginalExtension();
-    
-        // Remove old image if exists
-        if ($post->post_image && file_exists(public_path('uploads/coach_posts/' . $post->post_image))) {
-            unlink(public_path('uploads/coach_posts/' . $post->post_image));
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'errors' => $validator->errors(),
+            ], 422);
         }
-    
-        $post_image->move(public_path('uploads/coach_posts'), $post_image_name);
-        $post->post_image = $post_image_name;
+
+        // Find the post by ID and coach_id
+        $post = Post::where('id', $id)->where('coach_id', $request->coach_id)->first();
+
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post Not Found',
+            ], 404);
+        }
+
+        // Handle file upload if a new image is provided
+        if ($request->hasFile('post_image')) {
+            $post_image = $request->file('post_image');
+            $post_image_name = time() . '.' . $post_image->getClientOriginalExtension();
+        
+            // Remove old image if exists
+            if ($post->post_image && file_exists(public_path('uploads/coach_posts/' . $post->post_image))) {
+                unlink(public_path('uploads/coach_posts/' . $post->post_image));
+            }
+        
+            $post_image->move(public_path('uploads/coach_posts'), $post_image_name);
+            $post->post_image = $post_image_name;
+        }
+        
+
+        // Update the post
+        $post->post_title = $request->post_title;
+        $post->post_name = $request->post_name;
+        $post->post_description = $request->post_description;
+        $post->post_time = Carbon::now();
+        $post->post_status = $request->post_status;
+        $post->post_location = $request->post_location;
+        $post->coach_id = $request->coach_id;
+        $post->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully Updated Record',
+            'post' => $post,
+        ], 200);
     }
-    
 
-    // Update the post
-    $post->post_title = $request->post_title;
-    $post->post_name = $request->post_name;
-    $post->post_description = $request->post_description;
-    $post->post_time = Carbon::now();
-    $post->post_status = $request->post_status;
-    $post->post_location = $request->post_location;
-    $post->coach_id = $request->coach_id;
-    $post->save();
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Successfully Updated Record',
-        'post' => $post,
-    ], 200);
-}
 
 
 

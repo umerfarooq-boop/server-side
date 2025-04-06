@@ -227,6 +227,18 @@ Route::get('/ShowAttendance/{id}',[PlayerParentController::class,'ShowAttendance
 Route::get('/ShowPlayerScore/{id}',[PlayerParentController::class,'ShowPlayerScore']);
 // Player Score To Parent
 
+// Update Player Profile Information
+Route::post('/UpdatePlayerData/{id}',[PlayerController::class,'UpdatePlayerData']);
+// Update Player Profile Information
+
+// Update Password From Profile
+Route::post('/UpdatePassword/{id}',[PlayerController::class,'UpdatePassword']);
+// Update Password From Profile
+
+// Show Coach Post on |Dashboard
+Route::get('/ShowSignleCoachPost/{id}',[PostController::class,'ShowSignleCoachPost']);
+// Show Coach Post on |Dashboard
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
