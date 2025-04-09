@@ -20,6 +20,10 @@ class Coach extends Model
         'status',
     ];
 
+    public function ratingreviews(){
+        return $this->hasMany(RatingReviews::class,'coach_id','id');
+    }
+
     public function user(){
         return $this->hasMany(User::class,'user_id','id');
     }

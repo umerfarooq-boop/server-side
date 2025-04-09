@@ -17,6 +17,7 @@ use App\Http\Controllers\FeedbackFormController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlayerParentController;
 use App\Http\Controllers\CoachScheduleController;
+use App\Http\Controllers\RatingReviewsController;
 use App\Http\Controllers\SportCategoryController;
 use App\Http\Controllers\FeatureServiceController;
 use App\Http\Controllers\AssignEquipmentController;
@@ -260,5 +261,6 @@ Route::resources([
     'assign_equipment' => AssignEquipmentController::class,
     'request_equipment' => Request_EquipmentController::class,
     'return_equipment' => ReturnEquipmentController::class,
+    'rating_reviews'  => RatingReviewsController::class,
 ]);
 
