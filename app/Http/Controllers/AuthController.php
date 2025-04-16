@@ -8,6 +8,7 @@ use App\Mail\ForgotOtpMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -34,11 +35,10 @@ class AuthController extends Controller
         ]);
 
         Mail::to($user->email)->send(new SendOtpMail($user));
-        
         return response()->json([
             'success' => true,
             'message' => 'Otp send on Your Email',
-            'User' => $user
+            'User' => $user,
         ], 200);
     }
 
@@ -51,16 +51,30 @@ class AuthController extends Controller
         $user = User::where('email',$request->email)->first();
 
         if ($user && $user->otp == $request->otp && $user->otp_expires_at && Carbon::now()->lt($user->otp_expires_at)) {
+            $user->update([
+                'email_verified_at' => now(),
+                'otp' => null,
+                'otp_expires_at' => null
+            ]);
             return response()->json([
                 'success' => true,
                 'message' => 'Email Verified'
             ],200);
-            $user->update(['email_verified_at' => 1, 'otp' => null, 'otp_expires_at' => 0]);
+            // $user->update(['email_verified_at' => 1, 'otp' => null, 'otp_expires_at' => 0]);
         }else{
 
             return response()->json(['message' => 'Invalid OTP Time Over'], 400);
         }
 
+    }
+
+    public function alluser(){
+        $user = Auth::user(); // یا auth()->user()
+
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+        ], 200);
     }
 
     public function forgotOtp($id){
@@ -159,8 +173,11 @@ class AuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
+    
         $credentials = $request->only('email', 'password');
+    
+        // Set token expiration time to 60 minutes
+        JWTAuth::factory()->setTTL(60);
     
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json([
@@ -179,6 +196,7 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
+    
 
     
 

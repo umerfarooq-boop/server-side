@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-use auth;
 use App\Models\User;
 use App\Models\Coach;
 use App\Models\Player;
@@ -11,6 +10,7 @@ use Illuminate\Support\Str;
 use App\Models\PlayerParent;
 use Illuminate\Http\Request;
 use App\Mail\SendPasswordParent;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
@@ -87,10 +87,12 @@ class ProfileController extends Controller
             $coach->category_id = $request->category_id;
             $coach->experience = $request->experience;
             $coach->level = $request->level;
+            $coach->per_hour_charges = $request->per_hour_charges;
             $coach->phone_number = $request->phone_number;
             $coach->coach_location = $request->coach_location;
             $coach->image = $cimagename; // Store the image name in the database
-            $coach->certificate = $ccertificatename; // Store the certificate name in the database
+            $coach->certificate = $ccertificatename; 
+            $coach->created_by = Auth::id();
             // $coach->save();
 
 

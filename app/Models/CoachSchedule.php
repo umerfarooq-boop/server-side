@@ -21,6 +21,10 @@ class CoachSchedule extends Model
         'from_date'
     ];
 
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+
     public function PlayerParent(){
         return $this->belongsTo(PlayerParent::class,'player_id','id');
     }

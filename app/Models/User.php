@@ -43,6 +43,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Coach::class,'user_id');
     }
 
+    public function coachSchedule(){
+        return $this->hasMany(CoachSchedule::class);
+    }
+
     public function profileData(){
         return $this->belongsTo(Profile::class,'user_id');
     }

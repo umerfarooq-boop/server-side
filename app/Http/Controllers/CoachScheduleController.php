@@ -9,6 +9,7 @@ use App\Models\CoachSchedule;
 use Illuminate\Support\Carbon;
 use App\Models\EditAppointment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -416,10 +417,11 @@ class CoachScheduleController extends Controller
         $coach->from_date = $request->from_date;
         $coach->event_name = $request->event_name;
         $coach->status = $request->status;
+        $coach->created_by = Auth::id();
         $coach->save();
 
         $coach->load('player');
-
+        $coach->load('coach');
         // Create a notification for the coach
         Notification::create([
             'coach_id' => $request->coach_id,
@@ -500,6 +502,7 @@ class CoachScheduleController extends Controller
         $coach->from_date = $request->from_date;
         $coach->event_name = $request->event_name;
         $coach->status = $request->status;
+        $coach->created_by = Auth::id();
         $coach->save();
 
         $coach->load('player');

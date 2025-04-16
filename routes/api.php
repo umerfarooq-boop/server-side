@@ -6,11 +6,15 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CoachController;
 use App\Http\Controllers\VedioController;
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\StripeController;
 use App\Http\Controllers\AcademyController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PlayerScoreCotroller;
+use App\Http\Controllers\CheckoutFormCotroller;
 use App\Http\Controllers\HomeServiceController;
 use App\Http\Controllers\HomeSlidderController;
 use App\Http\Controllers\FeedbackFormController;
@@ -25,6 +29,12 @@ use App\Http\Controllers\EditAppointmentController;
 use App\Http\Controllers\ReturnEquipmentController;
 use App\Http\Controllers\Request_EquipmentController;
 use App\Http\Controllers\FrequentlyQuestionController;
+
+Route::middleware('jwt.auth')->get('/all-users', [AuthController::class, 'alluser']);
+
+Route::middleware('jwt.auth')->post('/send-message', [MessageController::class, 'send']);
+Route::middleware('jwt.auth')->get('/messages/{receiver_id}', [MessageController::class, 'showMessages']);
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -240,6 +250,20 @@ Route::post('/UpdatePassword/{id}',[PlayerController::class,'UpdatePassword']);
 Route::get('/ShowSignleCoachPost/{id}',[PostController::class,'ShowSignleCoachPost']);
 // Show Coach Post on |Dashboard
 
+// Payment Route
+Route::post('/create-payment-intent', [StripeController::class, 'createPaymentIntent']);
+Route::post('/store-payment', [StripeController::class, 'storePayment']);
+// Payment Route
+
+// Chat Application Routes
+// Route::middleware('auth:api')->group(function () {
+    Route::get('/messages/{from}/{to}', [MessageController::class, 'fetch']);
+    Route::post('/send-message', [MessageController::class, 'send']);
+    
+// });
+
+// Chat Application Routes
+
 Route::resources([
     'category' => SportCategoryController::class,
     'academy' => AcademyController::class,
@@ -262,5 +286,6 @@ Route::resources([
     'request_equipment' => Request_EquipmentController::class,
     'return_equipment' => ReturnEquipmentController::class,
     'rating_reviews'  => RatingReviewsController::class,
+    'checkout_form' => CheckoutFormCotroller::class,
 ]);
 
