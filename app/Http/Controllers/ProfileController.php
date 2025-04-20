@@ -141,37 +141,8 @@ class ProfileController extends Controller
             // $profile->user_id = $coach->id;
             // $profile->user_id = $request->user_id;
 
-            // // Stripe Account
-            // $user = User::find($request->user_id);
-            // if (!$user->stripe_account_id) {
-            //     Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
-    
-            //         // Create a Stripe Express account
-            //         $account = Account::create([
-            //             'type' => 'express',
-            //             'country' => 'US',
-            //             'email' => $user->email,
-            //             'capabilities' => [
-            //                 'card_payments' => ['requested' => true],
-            //                 'transfers' => ['requested' => true],
-            //             ],
-            //         ]);
-            
-            //         // Save stripe_account_id to the users table
-            //         $user->stripe_account_id = $account->id;
-            //         $user->save();
-            
-            //         // Generate Stripe onboarding link
-            //         $accountLink = \Stripe\AccountLink::create([
-            //             'account' => $account->id,
-            //             'refresh_url' => url('/stripe/refresh'),
-            //             'return_url' => url('/stripe/return'),
-            //             'type' => 'account_onboarding',
-            //         ]);
-            
-     
-                
-            // }
+             // Stripe Account
+      
 
 
 
