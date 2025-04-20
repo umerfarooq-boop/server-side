@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('stripe_account_id')->nullable();
             $table->string('role')->default('user');
             $table->string('otp')->nullable(); 
             $table->string('forgot_otp')->nullable(); 

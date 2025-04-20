@@ -51,16 +51,17 @@ class AuthController extends Controller
         $user = User::where('email',$request->email)->first();
 
         if ($user && $user->otp == $request->otp && $user->otp_expires_at && Carbon::now()->lt($user->otp_expires_at)) {
-            $user->update([
-                'email_verified_at' => now(),
-                'otp' => null,
-                'otp_expires_at' => null
-            ]);
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Email Verified'
             ],200);
-            // $user->update(['email_verified_at' => 1, 'otp' => null, 'otp_expires_at' => 0]);
+            // $user->update([
+            //     'email_verified_at' => now(),
+            //     'otp' => null,
+            //     'otp_expires_at' => null
+            // ]);
+            $user->update(['email_verified_at' => 1, 'otp' => null, 'otp_expires_at' => 0]);
         }else{
 
             return response()->json(['message' => 'Invalid OTP Time Over'], 400);

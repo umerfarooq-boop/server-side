@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
+use Stripe\Stripe;
+use Stripe\Account;
+use Stripe\AccountLink;
+use Stripe\Exception\ApiErrorException;
+
+
 
 class ProfileController extends Controller
 {
@@ -133,7 +139,43 @@ class ProfileController extends Controller
             // here send ID from REQuest form
 
             // $profile->user_id = $coach->id;
-            $profile->user_id = $request->user_id;
+            // $profile->user_id = $request->user_id;
+
+            // // Stripe Account
+            // $user = User::find($request->user_id);
+            // if (!$user->stripe_account_id) {
+            //     Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
+    
+            //         // Create a Stripe Express account
+            //         $account = Account::create([
+            //             'type' => 'express',
+            //             'country' => 'US',
+            //             'email' => $user->email,
+            //             'capabilities' => [
+            //                 'card_payments' => ['requested' => true],
+            //                 'transfers' => ['requested' => true],
+            //             ],
+            //         ]);
+            
+            //         // Save stripe_account_id to the users table
+            //         $user->stripe_account_id = $account->id;
+            //         $user->save();
+            
+            //         // Generate Stripe onboarding link
+            //         $accountLink = \Stripe\AccountLink::create([
+            //             'account' => $account->id,
+            //             'refresh_url' => url('/stripe/refresh'),
+            //             'return_url' => url('/stripe/return'),
+            //             'type' => 'account_onboarding',
+            //         ]);
+            
+     
+                
+            // }
+
+
+
+            // Stripe Account
 
         }
 
@@ -210,6 +252,8 @@ class ProfileController extends Controller
             'coach'   => $profile->coach_id ?? null,
             'player'   => $profile->player_id ?? null,
             'location' => $profile->profile_location ?? null,
+            'profile' => $profile,
+            // 'url' => isset($accountLink) ? $accountLink->url : null,
         ], 201);
     }
 
