@@ -18,7 +18,8 @@ class CoachSchedule extends Model
         'event_name',
         'status',
         'to_date',
-        'from_date'
+        'from_date',
+        'created_by'
     ];
 
     public function user(){

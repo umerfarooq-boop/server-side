@@ -62,6 +62,7 @@ class ProfileController extends Controller
         $profile->role = $request->role;
         $profile->profile_location = $request->profile_location;
         $profile->address = $request->address;
+        $profile->user_id = $request->user_id;
         $profile->save();
 
         // If the role is 'coach' and they have an academy
@@ -98,7 +99,7 @@ class ProfileController extends Controller
             $coach->coach_location = $request->coach_location;
             $coach->image = $cimagename; // Store the image name in the database
             $coach->certificate = $ccertificatename; 
-            $coach->created_by = Auth::id();
+            $coach->created_by = $request->created_by;
             // $coach->save();
 
 
@@ -135,18 +136,45 @@ class ProfileController extends Controller
             $coach->academy_id = $newacademy->id;
             $coach->save();
             $profile->coach_id = $coach->id;
-
+            $profile->user_id = $coach->created_by;
             // here send ID from REQuest form
 
             // $profile->user_id = $coach->id;
             // $profile->user_id = $request->user_id;
 
-             // Stripe Account
-      
+            Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
 
-
-
-            // Stripe Account
+        $user = User::find($profile->user_id); // 👈 get user from profile
+        
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+        
+        // Create Stripe Express Account if not exists
+        if (!$user->stripe_account_id) {
+            $account = Account::create([
+                'type' => 'express',
+                'country' => 'US',
+                'email' => $user->email,
+                'capabilities' => [
+                    'card_payments' => ['requested' => true],
+                    'transfers' => ['requested' => true],
+                ],
+            ]);
+        
+            $user->stripe_account_id = $account->id;
+            $user->save();
+        } else {
+            $account = Account::retrieve($user->stripe_account_id);
+        }
+        
+        // Generate onboarding link
+        $accountLink = AccountLink::create([
+            'account' => $account->id,
+            'refresh_url' => url('/stripe/refresh'),
+            'return_url' => url('/stripe/return'),
+            'type' => 'account_onboarding',
+        ]);
 
         }
 
@@ -185,7 +213,7 @@ class ProfileController extends Controller
             $player->save();
             $profile->player_id = $player->id;
             // $profile->user_id = $player->id;
-            $profile->user_id = $request->user_id;
+            
         
             $parent = new PlayerParent();
             $parent->cnic = $request->cnic;
@@ -211,6 +239,14 @@ class ProfileController extends Controller
 
         }
         
+        // Stripe Account
+            
+
+        
+        
+
+        // Stripe Account
+
 
         // Save the profile with associated player or coach IDs
         $profile->save();
@@ -224,7 +260,7 @@ class ProfileController extends Controller
             'player'   => $profile->player_id ?? null,
             'location' => $profile->profile_location ?? null,
             'profile' => $profile,
-            // 'url' => isset($accountLink) ? $accountLink->url : null,
+            'url' => $profile->role === 'coach' ? $accountLink->url : null,
         ], 201);
     }
 
@@ -232,6 +268,16 @@ class ProfileController extends Controller
   // Decode user info from JWT token
     public function getProfileData($id,$role)
     {
+        // $user = Profile::with(['user', 'coach', 'player', 'academy', 'playerParent'])
+        // ->where(function ($query) use ($id) {
+        //     $query->where('user_id', $id)
+        //         ->orWhere('coach_id', $id)
+        //         ->orWhere('player_id', $id);
+        // })
+        // ->where('role', $role) // Corrected `andWhere` to `where`
+        // ->first();
+
+
         $user = Profile::with(['user', 'coach', 'player', 'academy', 'playerParent'])
         ->where(function ($query) use ($id) {
             $query->where('user_id', $id)

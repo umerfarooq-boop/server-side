@@ -25,23 +25,38 @@ class PostController extends Controller
 
     // show Post Record on Website
 
+    // public function showPost()
+    // {
+    //     $post = Post::with(['coach.academy'])
+    //         ->whereIn('id', function ($query) {
+    //             $query->selectRaw('MAX(id)')
+    //                 ->from('posts')
+    //                 ->groupBy('coach_id');
+    //         })
+    //         ->orderBy('created_at', 'desc')
+    //         ->paginate(8); // Correctly chain the paginate() method here
+    
+    //     return response()->json([
+    //         "success" => true,
+    //         "message" => "Record Get Successfully",
+    //         "post" => $post
+    //     ]);
+    // }
+
+
     public function showPost()
     {
         $post = Post::with(['coach.academy'])
-            ->whereIn('id', function ($query) {
-                $query->selectRaw('MAX(id)')
-                    ->from('posts')
-                    ->groupBy('coach_id');
-            })
             ->orderBy('created_at', 'desc')
-            ->paginate(8); // Correctly chain the paginate() method here
-    
+            ->paginate(8); // Paginate all posts, not filtered ones
+
         return response()->json([
             "success" => true,
             "message" => "Record Get Successfully",
             "post" => $post
         ]);
     }
+
 
 
         // Show Coach Post According to its ID

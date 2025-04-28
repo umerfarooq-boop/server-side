@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->string('email');
-            $table->string('payment_id');
+            $table->unsignedBigInteger('payment_id');
+            $table->unsignedBigInteger('coach_id');
             $table->decimal('amount', 10, 2);
             $table->string('status');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
         });
     }

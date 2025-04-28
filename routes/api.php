@@ -252,17 +252,19 @@ Route::get('/ShowSignleCoachPost/{id}',[PostController::class,'ShowSignleCoachPo
 
 // Payment Route
 Route::post('/create-payment-intent', [StripeController::class, 'createPaymentIntent']);
-Route::post('/store-payment', [StripeController::class, 'storePayment']);
+Route::post('/store-payment', [StripeController::class, 'storePayment'])->middleware('jwt.auth');
+
 // Payment Route
 
 // Chat Application Routes
-// Route::middleware('auth:api')->group(function () {
+Route::middleware('jwt.auth')->group(function () {
     Route::get('/messages/{from}/{to}', [MessageController::class, 'fetch']);
     Route::post('/send-message', [MessageController::class, 'send']);
     
-// });
+});
 
 // Chat Application Routes
+
 
 Route::resources([
     'category' => SportCategoryController::class,
