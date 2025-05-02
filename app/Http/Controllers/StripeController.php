@@ -3,18 +3,19 @@
 namespace App\Http\Controllers;
 
 use Stripe\Stripe;
+use Stripe\Account;
 use App\Models\User;
 use App\Models\Coach;
+use App\Models\Invoice;
+use Stripe\AccountLink;
 use Stripe\PaymentIntent;
 use App\Models\CheckoutForm;
 use Illuminate\Http\Request;
+use App\Mail\PaymentReceived;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Stripe\Account;
-use Stripe\AccountLink;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf; // if using barryvdh/laravel-dompdf
-use App\Mail\PaymentReceived;
 
 class StripeController extends Controller
 {
@@ -208,7 +209,7 @@ public function createPaymentIntent(Request $request)
     // Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
     $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
 
-    
+
     $coach = User::find($request->coach_id);
     if (!$coach || !$coach->stripe_account_id) {
         return response()->json(['error' => 'Coach does not have Stripe connected account.'], 400);
@@ -248,35 +249,40 @@ public function createPaymentIntent(Request $request)
             'amount' => 'required|numeric',
             'payment_id' => 'required|string',
             'email' => 'required|email',
-            'coach_id' => 'required|exists:users,id',
+            'coach_id' => 'required|exists:coaches,id',
+            'coach_user_id' => 'required|exists:users,id',
         ]);
 
         // Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
-        $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
 
         try {
             $paymentId = explode('_secret', $request->payment_id)[0];
             $paymentIntent = PaymentIntent::retrieve($paymentId);
 
             if ($paymentIntent->status === 'succeeded') {
-                // Save payment
+                // FIX SWAPPED VALUES here
                 DB::table('payments')->insert([
-                    'email' => $request->email,
-                    'amount' => $request->amount,
-                    'payment_id' => $paymentIntent->id,
-                    'user_id' => Auth::id(), // Player ID
-                    'coach_id' => $request->coach_id,
-                    'status' => 'succeeded',
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'email'          => $request->email,
+                    'amount'         => $request->amount,
+                    'coach_id'       => $request->coach_id,        // Correct coach ID from Coaches table
+                    'coach_user_id'  => $request->coach_user_id,   // Correct coach user ID from Users table
+                    'payment_id'     => $paymentIntent->id,
+                    'user_id'        => Auth::id(),
+                    'status'         => 'succeeded',
+                    'created_at'     => now(),
+                    'updated_at'     => now(),
                 ]);
 
-                // Get coach
-                $coach = User::find($request->coach_id);
+                // Fetch coach and user models
+                $coachUser = User::find($request->coach_user_id);
+                $coach     = Coach::find($request->coach_id);
 
-                if ($coach) {
-                    $this->sendInvoiceToCoach(Auth::user(), $coach, $request->amount, $paymentIntent->id);
+                if (!$coachUser || !$coach) {
+                    return response()->json(['error' => 'Invalid coach data'], 400);
                 }
+
+                // Send invoice
+                $this->sendInvoiceToCoach(Auth::user(), $coachUser, $coach, $request->amount, $paymentIntent->id);
 
                 return response()->json(['message' => 'Payment stored and invoice sent successfully']);
             }
@@ -288,19 +294,62 @@ public function createPaymentIntent(Request $request)
         }
     }
 
-    protected function sendInvoiceToCoach($player, $coach, $amount, $paymentId)
+
+
+    protected function sendInvoiceToCoach($player, $coachUser, $coach, $amount, $paymentId)
     {
         $pdf = Pdf::loadView('emails.payment-received', [
-            'player' => $player,
-            'coach' => $coach,
-            'amount' => $amount,
+            'player'     => $player,
+            'coach'      => $coachUser,
+            'amount'     => $amount,
             'payment_id' => $paymentId,
         ]);
     
-        Mail::to($coach->email) // Main receiver: Coach
-            ->cc($player->email) // ✅ CC the Player also (Player will see this email)
-            // ->bcc($player->email) // ✅ Optional: if you want to BCC (hidden copy), use bcc instead
-            ->send(new PaymentReceived($player, $coach, $amount, $pdf, $paymentId));
+        $playerName = str_replace(' ', '_', strtolower($player->name));
+        $fileName   = 'invoice_' . $playerName . '_' . $paymentId . '.pdf';
+        $folderPath = public_path('uploads/PDF/PDF_Invoice');
+        $filePath   = $folderPath . '/' . $fileName;
+    
+        $pdf->save($filePath);
+    
+        Mail::to($coachUser->email)
+            ->cc($player->email)
+            ->send(new PaymentReceived($player, $coachUser, $amount, $pdf, $paymentId));
+    
+        DB::table('invoices')->insert([
+            'player_id'     => $player->id,
+            'coach_user_id' => $coachUser->id,
+            'coach_id'      => $coach->id,
+            'amount'        => $amount,
+            'payment_id'    => $paymentId,
+            'file_path'     => 'uploads/PDF/PDF_Invoice/' . $fileName,
+            'created_at'    => now(),
+            'updated_at'    => now(),
+        ]);
+    }
+    
+
+
+    public function GetInvoiceRecord()
+    {
+        $invoices = Invoice::with(['player', 'coach'])
+            ->where('coach_user_id', Auth::id())
+            ->get();
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Get Successfully',
+            'invoice' => $invoices
+        ], 200);
+    }
+
+    public function ShowSingleInvoice(){
+        $singal_invoice = Invoice::with(['player','coach'])->where('player_id',Auth::id())->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Get SUccessfully',
+            'invoice' => $singal_invoice
+        ],201);
     }
     
     

@@ -256,6 +256,26 @@ Route::post('/store-payment', [StripeController::class, 'storePayment'])->middle
 
 // Payment Route
 
+
+// Get Invoice Accoring to Coach Auth ID
+Route::get('/invoice_record',[StripeController::class,'GetInvoiceRecord'])->middleware('jwt.auth');
+Route::get('/signal_invoice_record',[StripeController::class,'ShowSingleInvoice'])->middleware('jwt.auth');
+
+// invoice PDF
+
+Route::get('/view-pdf/{filename}', function ($filename) {
+    $path = public_path("uploads/PDF/PDF_Invoice/$filename");
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+});
+
+
+
+// Get Invoice Accoring to Coach Auth ID
+
+
 // Chat Application Routes
 Route::middleware('jwt.auth')->group(function () {
     Route::get('/messages/{from}/{to}', [MessageController::class, 'fetch']);

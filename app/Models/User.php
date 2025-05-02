@@ -51,6 +51,19 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Profile::class,'user_id');
     }
 
+    // Player Coach Invoice
+    public function playerInvoices()
+    {
+        return $this->hasMany(Invoice::class, 'player_id');
+    }
+    
+    public function coachInvoices()
+    {
+        return $this->hasMany(Invoice::class, 'coach_user_id');
+    }
+    
+    // Player Coach Invoice
+
 
     /**
      * Get the attributes that should be cast.

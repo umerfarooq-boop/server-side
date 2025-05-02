@@ -25,6 +25,7 @@ class player extends Model
         'location',
     ];
 
+
     public function reatingreviews(){
         return $this->hasMany(RatingReviews::class,'player_id','id');
     }
