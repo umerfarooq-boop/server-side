@@ -22,6 +22,20 @@ class NotificationController extends Controller
         ]);
     }
 
+    public function getNotificationsPlayer($player_id)
+    {
+        $notifications = Notification::with('coach')->where('player_id', $player_id)
+        ->where('is_read', 0)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+
+        return response()->json([
+            'status' => true,
+            'notifications' => $notifications,
+        ]);
+    }
+
     // public function NotificationImage
 
     public function markNotificationAsRead(Request $request, $coach_id)

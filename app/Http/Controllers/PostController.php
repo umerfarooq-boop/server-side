@@ -25,37 +25,39 @@ class PostController extends Controller
 
     // show Post Record on Website
 
+    public function showPost()
+    {
+        $post = Post::with(['coach.academy','coach.ratingreviews'])  // Load academy through coach
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('posts')
+                    ->groupBy('coach_id');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(2);
+    
+        return response()->json([
+            "success" => true,
+            "message" => "Records fetched successfully",
+            "post" => $post
+        ]);
+    }
+    
+    
+
+
     // public function showPost()
     // {
     //     $post = Post::with(['coach.academy'])
-    //         ->whereIn('id', function ($query) {
-    //             $query->selectRaw('MAX(id)')
-    //                 ->from('posts')
-    //                 ->groupBy('coach_id');
-    //         })
     //         ->orderBy('created_at', 'desc')
-    //         ->paginate(8); // Correctly chain the paginate() method here
-    
+    //         ->paginate(8); // Paginate all posts, not filtered ones
+
     //     return response()->json([
     //         "success" => true,
     //         "message" => "Record Get Successfully",
     //         "post" => $post
     //     ]);
     // }
-
-
-    public function showPost()
-    {
-        $post = Post::with(['coach.academy'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(8); // Paginate all posts, not filtered ones
-
-        return response()->json([
-            "success" => true,
-            "message" => "Record Get Successfully",
-            "post" => $post
-        ]);
-    }
 
 
 
@@ -242,7 +244,7 @@ class PostController extends Controller
             'post_description' => 'nullable|string',
             'post_time' => 'nullable|date',
             'post_status' => 'required|string',
-            'post_location' => 'nullable|string|max:255',
+            // 'post_location' => 'nullable|string|max:255',
             'coach_id' => 'nullable|exists:coaches,id', // Assuming there's a 'coaches' table
             'post_image' => 'nullable', // Validates uploaded image
         ]);
@@ -286,7 +288,7 @@ class PostController extends Controller
         $post->post_description = $request->post_description;
         $post->post_time = Carbon::now();
         $post->post_status = $request->post_status;
-        $post->post_location = $request->post_location;
+        // $post->post_location = $request->post_location;  
         $post->coach_id = $request->coach_id;
         $post->save();
 

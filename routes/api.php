@@ -86,6 +86,10 @@ Route::get('/coach_record',[CoachController::class,'coach_record']);
     // Route::get('/coachschedule',[CoachScheduleController::class,'coachschedule']);
 // Get Coach Record
 
+// Messege Controller For Chat
+Route::get('/get_sidebar/{id}',[MessageController::class,'GetBookedRecord']);
+// Messege Controller For Chat
+
 // Get Appointment Record
 Route::get('/editAppointmentDate/{id}',[CoachScheduleController::class,'editAppointmentDate']);
 // Get Appointment Record
@@ -173,6 +177,10 @@ Route::get('/Getnotifications/{coach_id}', [NotificationController::class, 'getN
 // Update Notification When Read Notification
 Route::post('/markNotificationAsRead/{coach_id}', [NotificationController::class, 'markNotificationAsRead']);
 // Update Notification When Read Notification
+
+// Get Player Notfication of Coach
+Route::get('/getNotificationsPlayer/{player_id}', [NotificationController::class, 'getNotificationsPlayer']);
+// Get Player Notfication of Coach
 
 // Show Coach Bookings on Calender
 Route::get('/showCoachBookings/{id}',[CoachScheduleController::class,'showCoachBookings']);
@@ -278,9 +286,9 @@ Route::get('/view-pdf/{filename}', function ($filename) {
 
 // Chat Application Routes
 Route::middleware('jwt.auth')->group(function () {
-    Route::get('/messages/{from}/{to}', [MessageController::class, 'fetch']);
+    Route::get('/messages/{receiverId}/{senderId}', [MessageController::class, 'showMessages']);
     Route::post('/send-message', [MessageController::class, 'send']);
-    
+    Route::get('/unread-count/{userId}', [MessageController::class, 'unreadCount']);
 });
 
 // Chat Application Routes

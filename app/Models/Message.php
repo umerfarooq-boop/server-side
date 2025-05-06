@@ -17,4 +17,12 @@ class Message extends Model
     public function receiver() {
         return $this->belongsTo(User::class, 'receiver_id');
     }
+
+    public function coach(){
+        
+    }
+
+    public function player(){
+
+    }
 }

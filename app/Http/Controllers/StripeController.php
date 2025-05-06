@@ -206,8 +206,8 @@ class StripeController extends Controller
 
 public function createPaymentIntent(Request $request)
 {
-    // Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
-    $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+    Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
+    // $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
 
 
     $coach = User::find($request->coach_id);
@@ -253,7 +253,7 @@ public function createPaymentIntent(Request $request)
             'coach_user_id' => 'required|exists:users,id',
         ]);
 
-        // Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
+        Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
 
         try {
             $paymentId = explode('_secret', $request->payment_id)[0];
