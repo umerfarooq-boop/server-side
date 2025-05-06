@@ -285,11 +285,13 @@ Route::get('/view-pdf/{filename}', function ($filename) {
 
 
 // Chat Application Routes
-Route::middleware('jwt.auth')->group(function () {
-    Route::get('/messages/{receiverId}/{senderId}', [MessageController::class, 'showMessages']);
-    Route::post('/send-message', [MessageController::class, 'send']);
-    Route::get('/unread-count/{userId}', [MessageController::class, 'unreadCount']);
-});
+// Route::middleware('jwt.auth')->group(function () {
+    
+    
+// });
+Route::get('/messages/{receiverId}/{senderId}', [MessageController::class, 'showMessages']);
+Route::post('/send-message', [MessageController::class, 'send']);
+// Route::get('/unread-count/{userId}', [MessageController::class, 'unreadCount']);
 
 // Chat Application Routes
 
