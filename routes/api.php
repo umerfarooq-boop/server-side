@@ -264,6 +264,10 @@ Route::post('/store-payment', [StripeController::class, 'storePayment'])->middle
 
 // Payment Route
 
+// Emergency Record Get Player Data From CoachSchedule Table
+Route::get('/FetchEmergencyRecord/{id}',[CoachScheduleController::class,'FetchEmergencyRecord']);
+Route::post('/send_emergency',[CoachScheduleController::class,'StoreEmergencyRecord']);
+// Emergency Record Get Player Data From CoachSchedule Table
 
 // Get Invoice Accoring to Coach Auth ID
 Route::get('/invoice_record',[StripeController::class,'GetInvoiceRecord'])->middleware('jwt.auth');

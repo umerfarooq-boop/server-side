@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\player;
+use App\Models\Emergency;
 use App\Models\Attendence;
+use App\Mail\EmergencyMail;
 use App\Models\Notification;
+use App\Models\PlayerParent;
 use Illuminate\Http\Request;
 use App\Models\CoachSchedule;
 use Illuminate\Support\Carbon;
 use App\Models\EditAppointment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -541,6 +546,40 @@ class CoachScheduleController extends Controller
             'status' => true,
             'bookedSlots' => $bookedSlots,
         ]);
+    }
+
+    public function FetchEmergencyRecord($coach_id){
+        $emergency = CoachSchedule::with(['player','PlayerParent','coach'])->where('coach_id',$coach_id)->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Get Successfully',
+            'emergency' => $emergency
+        ],201);
+    }
+
+    public function StoreEmergencyRecord(Request $request)
+    {
+
+        $emergency = new Emergency();
+        $emergency->emergencyType = $request->emergencyType;
+        $emergency->subemergencyType = $request->subemergencyType || null;
+        $emergency->description = $request->description;
+        $emergency->player_id = $request->player_id;
+        $emergency->parent_id = $request->parent_id;
+        $emergency->save();
+
+        $parentrecord = PlayerParent::find($request->parent_id);
+        $player_record = Player::find($request->player_id);
+        $email = $parentrecord->email;
+
+        Mail::to($email)->send(new EmergencyMail($emergency, $parentrecord, $player_record));
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Saved Successfully and Email Sent',
+            'emergency' => $emergency,
+            'parent_email' => $email
+        ], 201);
     }
 
 
