@@ -22,6 +22,8 @@ return new class extends Migration
             $table->unsignedBigInteger('booking_slot')->nullable();
             $table->string('event_name');
             $table->string('status')->default('processing');
+            $table->integer('booking_slot');
+            $table->string('playwith');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });

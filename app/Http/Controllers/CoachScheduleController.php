@@ -323,18 +323,6 @@ class CoachScheduleController extends Controller
     }
 
 
-
-    // Update fields
-        // $coach->to_date = $validated['to_date'];
-        // $coach->from_date = $validated['from_date'];
-        // $coach->end_time = $validated['end_time'];
-        // $coach->booking_slot = $validated['booking_slot'];
-        // $coach->event_name = $validated['event_name'];
-        // $coach->start_time = $validated['start_time'];
-        // $coach->status = 'processing';
-        // $coach->save();
-
-
     /**
      * Show the form for creating a new resource.
      */
@@ -342,6 +330,21 @@ class CoachScheduleController extends Controller
     {
         //
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Store a newly created resource in storage. Create Appointment For Individual
@@ -358,8 +361,10 @@ class CoachScheduleController extends Controller
             'to_date' => 'required|date',
             'from_date' => 'required|date',
             'status' => 'required',
+            'booking_count' => 'required',
+            'playwith' => 'required'
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -367,51 +372,59 @@ class CoachScheduleController extends Controller
                 'error' => $validator->errors(),
             ], 401);
         }
-
-        // Check if the player has already booked an appointment with the coach on the same day
+    
+        // ✅ Check if player already booked for the day
         $existingBooking = CoachSchedule::where('coach_id', $request->coach_id)
             ->where('player_id', $request->player_id)
             ->where('from_date', $request->from_date)
             ->exists();
-
+    
         if ($existingBooking) {
             return response()->json([
                 'status' => false,
                 'message' => 'You have already booked an appointment with this coach on this date.',
             ], 403);
         }
-
-        // Check if the coach's daily appointment limit (10) is exceeded
+    
+        // ✅ Check coach's daily limit
         $dailyBookings = CoachSchedule::where('coach_id', $request->coach_id)
             ->where('from_date', $request->from_date)
             ->count();
-
+    
         if ($dailyBookings >= 10) {
             return response()->json([
                 'status' => false,
                 'message' => 'This coach has reached the daily appointment limit.',
             ], 403);
         }
-
-        // Check for time slot conflicts
-        $conflict = CoachSchedule::where('coach_id', $request->coach_id)
+    
+        // ✅ Check slot conflicts using playwith rules
+        $slotBookings = CoachSchedule::where('coach_id', $request->coach_id)
             ->where('from_date', $request->from_date)
-            ->where(function ($query) use ($request) {
-                $query->whereBetween('start_time', [$request->start_time, $request->end_time])
-                    ->orWhereBetween('end_time', [$request->start_time, $request->end_time])
-                    ->orWhereRaw('? BETWEEN start_time AND end_time', [$request->start_time])
-                    ->orWhereRaw('? BETWEEN start_time AND end_time', [$request->end_time]);
-            })
-            ->exists();
-
-        if ($conflict) {
-            return response()->json([
-                'status' => false,
-                'message' => 'This time slot is already booked. Please choose a different time.',
-            ], 403);
+            ->where('start_time', $request->start_time)
+            ->where('end_time', $request->end_time)
+            ->get();
+    
+        $individualExists = $slotBookings->where('playwith', 'individual')->count() > 0;
+        $teamCount = $slotBookings->where('playwith', 'team')->count();
+    
+        if ($request->playwith == 'individual') {
+            if ($individualExists || $teamCount >= 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'This slot is already booked. Choose a different time.',
+                ], 403);
+            }
+        } elseif ($request->playwith == 'team') {
+            if ($individualExists || $teamCount >= 2) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'This slot is fully booked for team. Choose a different time.',
+                ], 403);
+            }
         }
-
-        // Create a new booking
+    
+        // ✅ Create booking
         $coach = new CoachSchedule();
         $coach->coach_id = $request->coach_id;
         $coach->player_id = $request->player_id;
@@ -422,24 +435,81 @@ class CoachScheduleController extends Controller
         $coach->from_date = $request->from_date;
         $coach->event_name = $request->event_name;
         $coach->status = $request->status;
+        $coach->booking_count = $request->booking_count;
+        $coach->playwith = $request->playwith;
         $coach->created_by = Auth::id();
         $coach->save();
-
-        $coach->load('player');
-        $coach->load('coach');
-        // Create a notification for the coach
+    
+        $coach->load('player', 'coach');
+    
         Notification::create([
             'coach_id' => $request->coach_id,
             'player_id' => $request->player_id,
             'message' => 'You have a new booking from Player ' . $coach->player->player_name,
         ]);
-
+    
         return response()->json([
             'status' => true,
             'message' => 'Record Saved Successfully',
             'coach' => $coach,
         ], 201);
     }
+
+    public function fetchBookedSlots(Request $request, $coach_id)
+    {
+        $request->validate([
+            'date' => 'required|date',
+        ]);
+    
+        $date = $request->date;
+    
+        // Fetch all relevant bookings for the selected date
+        $bookedSlots = DB::table('coach_schedules')
+            ->where('coach_id', $coach_id)
+            ->whereDate('from_date', '<=', $date)
+            ->whereDate('to_date', '>=', $date)
+            ->select('start_time', 'end_time', 'playwith', DB::raw('SUM(booking_count) as bookings'))
+            ->groupBy('start_time', 'end_time', 'playwith')
+            ->get();
+    
+        return response()->json([
+            'status' => true,
+            'bookedSlots' => $bookedSlots,
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Create Appointment for Team
 
@@ -526,27 +596,30 @@ class CoachScheduleController extends Controller
         ], 201);
     }
 
-    public function fetchBookedSlotsTeam(Request $request, $coach_id)
-    {
-        $request->validate([
-            'date' => 'required|date',
-        ]);
+    // public function fetchBookedSlotsTeam(Request $request, $coach_id)
+    // {
+    //     $request->validate([
+    //         'date' => 'required|date',
+    //     ]);
 
-        $date = $request->date;
+    //     $date = $request->date;
 
-        // Count bookings per slot
-        $bookedSlots = CoachSchedule::where('coach_id', $coach_id)
-            ->whereDate('from_date', '<=', $date)
-            ->whereDate('to_date', '>=', $date)
-            ->select('start_time', 'end_time', DB::raw('COUNT(*) as bookings'))
-            ->groupBy('start_time', 'end_time')
-            ->get();
+    //     // Count bookings per slot
+    //     $bookedSlots = CoachSchedule::where('coach_id', $coach_id)
+    //         ->whereDate('from_date', '<=', $date)
+    //         ->whereDate('to_date', '>=', $date)
+    //         ->select('start_time', 'end_time', DB::raw('COUNT(*) as bookings'))
+    //         ->groupBy('start_time', 'end_time')
+    //         ->get();
 
-        return response()->json([
-            'status' => true,
-            'bookedSlots' => $bookedSlots,
-        ]);
-    }
+    //     return response()->json([
+    //         'status' => true,
+    //         'bookedSlots' => $bookedSlots,
+    //     ]);
+    // }
+
+
+    
 
     public function FetchEmergencyRecord($coach_id){
         $emergency = CoachSchedule::with(['player','PlayerParent','coach'])->where('coach_id',$coach_id)->get();
@@ -584,24 +657,7 @@ class CoachScheduleController extends Controller
 
 
 
-    public function fetchBookedSlots(Request $request, $coach_id)
-    {
-    $request->validate([
-        'date' => 'required|date',
-    ]);
 
-    $date = $request->date;
-
-    $bookedSlots = CoachSchedule::where('coach_id', $coach_id)
-        ->whereDate('from_date', '<=', $date)
-        ->whereDate('to_date', '>=', $date) // Assuming `to_date` column exists
-        ->get(['start_time', 'end_time', 'from_date', 'to_date']);
-
-    return response()->json([
-        'status' => true,
-        'bookedSlots' => $bookedSlots,
-    ]);
-    }
 
     /**
      * Display the specified resource.

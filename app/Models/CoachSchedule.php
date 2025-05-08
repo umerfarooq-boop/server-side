@@ -19,8 +19,12 @@ class CoachSchedule extends Model
         'status',
         'to_date',
         'from_date',
-        'created_by'
+        'created_by',
+        'playwith',
+        'booking_count',
     ];
+
+
 
     public function user(){
         return $this->belongsTo(User::class);
