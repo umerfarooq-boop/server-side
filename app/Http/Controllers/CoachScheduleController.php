@@ -34,6 +34,22 @@ class CoachScheduleController extends Controller
         ],201);
     }
 
+    // Get Record Fom Edit Appointment
+    public function GetEditAppointmentRecord($id)
+    {
+        $editappointments = EditAppointment::where('player_id', $id)->first();
+
+        $editappointments->load('player.sportCategory');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Record fetched successfully',
+            'editappointment' => $editappointments,
+        ], 200);
+    }
+
+    // Get Record Fom Edit Appointment
+
     public function PlayerRequests($id){
         $coaches = CoachSchedule::with(['coach', 'sportCategory', 'player'])->where('coach_id', $id)->orderBy('id', 'desc')->get();
 

@@ -67,6 +67,49 @@ class CheckoutFormCotroller extends Controller
     }
 
     /**
+     * 
+     *     public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'player_id' => 'required',
+            'coach_id' => 'required',
+            'booking_id' => 'required',
+            'player_name' => 'required',
+            'player_email' => 'required|email',
+            'player_phone_number' => 'required',
+            'player_address' => 'required',
+            'coach_name' => 'required',
+            'start_time' => 'required',
+            'end_time' => 'required',
+            'to_date' => 'required|date',
+            'from_date' => 'required|date',
+            'per_hour_charges' => 'required|numeric',
+            'total_charges' => 'required|numeric',
+            'payment_type' => 'required|in:stripe,paypal,bank',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'error' => $validator->errors()
+            ], 422);
+        }
+    
+        $newRecord = CheckoutForm::updateOrCreate(
+            ['player_id' => $request->player_id], // condition to check
+            $request->all() // data to update or insert
+        );
+    
+        return response()->json([
+            'success' => true,
+            'message' => $newRecord->wasRecentlyCreated ? 'Record added successfully' : 'Record updated successfully',
+            'data' => $newRecord
+        ], $newRecord->wasRecentlyCreated ? 201 : 200);
+    }
+     */
+
+    /**
      * Display the specified resource.
      */
     public function show(string $id)

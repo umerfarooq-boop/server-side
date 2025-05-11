@@ -194,6 +194,10 @@ Route::get('/fetchBookedSlots/{id}',[CoachScheduleController::class,'fetchBooked
 Route::post('/markAttendance/{id}',[AttendanceController::class,'markAttendance']);
 // Mark Attendance
 
+// Edit Appointment
+Route::get('/get_edit_appointment/{id}',[CoachScheduleController::class,'GetEditAppointmentRecord']);
+// Edit Appointment
+
 // Book Appointment for Team
 Route::post('/TeamBooking',[CoachScheduleController::class,'TeamBooking']);
 // Book Appointment for Team
