@@ -11,6 +11,10 @@ class Request_Equipment extends Model
 
     protected $fillable = ['player_id','coach_id','equipment_name_id','equipment_quantity','equipment_status','return_date_time','now_date_time'];
 
+    public function PlayerParent(){
+        return $this->belongsTo(PlayerParent::class,'player_id','id');
+    }
+
     public function player(){
         return $this->belongsTo(player::class,'player_id');
     }

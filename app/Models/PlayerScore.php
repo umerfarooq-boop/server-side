@@ -20,6 +20,10 @@ class PlayerScore extends Model
         'score_status',
         'coach_id',
     ];
+
+    public function PlayerParent(){
+        return $this->belongsTo(PlayerParent::class,'player_id','id');
+    }
     
     public function player(){
         return $this->belongsTo(player::class,'player_id');

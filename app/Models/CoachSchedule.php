@@ -18,8 +18,21 @@ class CoachSchedule extends Model
         'event_name',
         'status',
         'to_date',
-        'from_date'
+        'from_date',
+        'created_by',
+        'playwith',
+        'booking_count',
     ];
+
+
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+
+    public function PlayerParent(){
+        return $this->belongsTo(PlayerParent::class,'player_id','id');
+    }
 
     public function editappointment(){
         return $this->hasMany(EditAppointment::class,'coach_schedule_id','id');

@@ -6,23 +6,35 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CoachController;
 use App\Http\Controllers\VedioController;
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\StripeController;
 use App\Http\Controllers\AcademyController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PlayerScoreCotroller;
+use App\Http\Controllers\CheckoutFormCotroller;
 use App\Http\Controllers\HomeServiceController;
 use App\Http\Controllers\HomeSlidderController;
 use App\Http\Controllers\FeedbackFormController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlayerParentController;
 use App\Http\Controllers\CoachScheduleController;
+use App\Http\Controllers\RatingReviewsController;
 use App\Http\Controllers\SportCategoryController;
 use App\Http\Controllers\FeatureServiceController;
 use App\Http\Controllers\AssignEquipmentController;
 use App\Http\Controllers\EditAppointmentController;
-use App\Http\Controllers\FrequentlyQuestionController;
+use App\Http\Controllers\ReturnEquipmentController;
 use App\Http\Controllers\Request_EquipmentController;
+use App\Http\Controllers\FrequentlyQuestionController;
+
+Route::middleware('jwt.auth')->get('/all-users', [AuthController::class, 'alluser']);
+
+Route::middleware('jwt.auth')->post('/send-message', [MessageController::class, 'send']);
+Route::middleware('jwt.auth')->get('/messages/{receiver_id}', [MessageController::class, 'showMessages']);
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -39,11 +51,11 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/resend-otp',[AuthController::class,'resendOtp']);
 
 // Forgot Password OTP
-Route::post('/forgotOtp/{id}',[AuthController::class,'forgotOtp']);
+Route::post('/forgotOtp',[AuthController::class,'forgotOtp']);
 // Forgot Password OTP
 
 // verify Forgot OTP
-Route::post('/verifyForgotOtp/{id}', [AuthController::class, 'verifyForgotOtp']);
+Route::post('/verifyForgotOtp', [AuthController::class, 'verifyForgotOtp']);
 // verify Forgot OTP
 
 // Resend Forgot OTP
@@ -51,7 +63,7 @@ Route::post('/ForgotResendOtp', [AuthController::class, 'ForgotResendOtp']);
 // Resend Forgot OTP
 
 // Reset Password
-Route::post('/resetPassword/{id}',[AuthController::class,'resetPassword']);
+Route::post('/resetPassword',[AuthController::class,'resetPassword']);
 // Reset Password
 
 // Show coahc_record in front of Website
@@ -73,6 +85,10 @@ Route::get('/coach_record',[CoachController::class,'coach_record']);
 // Get Coach Record
     // Route::get('/coachschedule',[CoachScheduleController::class,'coachschedule']);
 // Get Coach Record
+
+// Messege Controller For Chat
+Route::get('/get_sidebar/{id}',[MessageController::class,'GetBookedRecord']);
+// Messege Controller For Chat
 
 // Get Appointment Record
 Route::get('/editAppointmentDate/{id}',[CoachScheduleController::class,'editAppointmentDate']);
@@ -162,6 +178,14 @@ Route::get('/Getnotifications/{coach_id}', [NotificationController::class, 'getN
 Route::post('/markNotificationAsRead/{coach_id}', [NotificationController::class, 'markNotificationAsRead']);
 // Update Notification When Read Notification
 
+// Get Player Notfication of Coach
+Route::get('/getNotificationsPlayer/{player_id}', [NotificationController::class, 'getNotificationsPlayer']);
+// Get Player Notfication of Coach
+
+// Mark Player Notification Read
+Route::post('/markPlayerNotificationAsRead/{player_id}', [NotificationController::class, 'markPlayerNotificationAsRead']);
+// Mark Player Notification Read
+
 // Show Coach Bookings on Calender
 Route::get('/showCoachBookings/{id}',[CoachScheduleController::class,'showCoachBookings']);
 // Show Coach Bookings on Calender
@@ -173,6 +197,16 @@ Route::get('/fetchBookedSlots/{id}',[CoachScheduleController::class,'fetchBooked
 // Mark Attendance
 Route::post('/markAttendance/{id}',[AttendanceController::class,'markAttendance']);
 // Mark Attendance
+
+Route::get('reject_edit_appointment/{id}',[CoachScheduleController::class,'RejectEditAppointment']);
+
+// Edit Attendance
+Route::get('/edit_attendance/{id}',[AttendanceController::class,'EditAttendance']);
+// Edit Attendance
+
+// Edit Appointment
+Route::get('/get_edit_appointment/{id}',[CoachScheduleController::class,'GetEditAppointmentRecord']);
+// Edit Appointment
 
 // Book Appointment for Team
 Route::post('/TeamBooking',[CoachScheduleController::class,'TeamBooking']);
@@ -199,7 +233,7 @@ Route::get('/AcceptEditAppointment/{id}',[EditAppointmentController::class,'Acce
 // AcceptEditAppointment
 
 // Accept Equipment Request
-Route::get('/AcceptEquipmentRequest/{id}',[Request_EquipmentController::class,'AcceptEquipmentRequest']);
+Route::post('/AcceptEquipmentRequest/{id}',[Request_EquipmentController::class,'AcceptEquipmentRequest']);
 // Accept Equipment Request
 
 // DeleteEquipmentRequest
@@ -207,8 +241,78 @@ Route::get('/DeleteEquipmentRequest/{id}',[Request_EquipmentController::class,'D
 // DeleteEquipmentRequest
 
 // Return Equipment
-Route::get('/ReturnEquipment/{id}',[Request_EquipmentController::class,'ReturnEquipment']);
+Route::post('/ReturnEquipment/{id}',[Request_EquipmentController::class,'ReturnEquipment']);
 // Return Equipment
+
+// Show Return Equipment
+Route::get('/show_return_equipment/{id}',[Request_EquipmentController::class,'show_return_equipment']);
+// Show Return Equipment
+
+// Parent Record According to ID
+Route::get('/getParent/{email}',[PlayerParentController::class,'getParent']);
+// Parent Record According to ID
+
+// Player Attendance To Parent
+Route::get('/ShowAttendance/{id}',[PlayerParentController::class,'ShowAttendance']);
+// Player Attendance To Parent
+
+// Player Score To Parent
+Route::get('/ShowPlayerScore/{id}',[PlayerParentController::class,'ShowPlayerScore']);
+// Player Score To Parent
+
+// Update Player Profile Information
+Route::post('/UpdatePlayerData/{id}',[PlayerController::class,'UpdatePlayerData']);
+// Update Player Profile Information
+
+// Update Password From Profile
+Route::post('/UpdatePassword/{id}',[PlayerController::class,'UpdatePassword']);
+// Update Password From Profile
+
+// Show Coach Post on |Dashboard
+Route::get('/ShowSignleCoachPost/{id}',[PostController::class,'ShowSignleCoachPost']);
+// Show Coach Post on |Dashboard
+
+// Payment Route
+Route::post('/create-payment-intent', [StripeController::class, 'createPaymentIntent']);
+Route::post('/store-payment', [StripeController::class, 'storePayment'])->middleware('jwt.auth');
+
+// Payment Route
+
+// Emergency Record Get Player Data From CoachSchedule Table
+Route::get('/FetchEmergencyRecord/{id}',[CoachScheduleController::class,'FetchEmergencyRecord']);
+Route::post('/send_emergency',[CoachScheduleController::class,'StoreEmergencyRecord']);
+// Emergency Record Get Player Data From CoachSchedule Table
+
+// Get Invoice Accoring to Coach Auth ID
+Route::get('/invoice_record',[StripeController::class,'GetInvoiceRecord'])->middleware('jwt.auth');
+Route::get('/signal_invoice_record',[StripeController::class,'ShowSingleInvoice'])->middleware('jwt.auth');
+
+// invoice PDF
+
+Route::get('/view-pdf/{filename}', function ($filename) {
+    $path = public_path("uploads/PDF/PDF_Invoice/$filename");
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+});
+
+
+
+// Get Invoice Accoring to Coach Auth ID
+
+
+// Chat Application Routes
+// Route::middleware('jwt.auth')->group(function () {
+    
+    
+// });
+Route::get('/messages/{receiverId}/{senderId}', [MessageController::class, 'showMessages']);
+Route::post('/send-message', [MessageController::class, 'send']);
+// Route::get('/unread-count/{userId}', [MessageController::class, 'unreadCount']);
+
+// Chat Application Routes
+
 
 Route::resources([
     'category' => SportCategoryController::class,
@@ -230,5 +334,8 @@ Route::resources([
     'edit_appointment' => EditAppointmentController::class,
     'assign_equipment' => AssignEquipmentController::class,
     'request_equipment' => Request_EquipmentController::class,
+    'return_equipment' => ReturnEquipmentController::class,
+    'rating_reviews'  => RatingReviewsController::class,
+    'checkout_form' => CheckoutFormCotroller::class,
 ]);
 

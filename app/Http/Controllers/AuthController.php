@@ -8,6 +8,7 @@ use App\Mail\ForgotOtpMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -34,11 +35,10 @@ class AuthController extends Controller
         ]);
 
         Mail::to($user->email)->send(new SendOtpMail($user));
-        
         return response()->json([
             'success' => true,
             'message' => 'Otp send on Your Email',
-            'User' => $user
+            'User' => $user,
         ], 200);
     }
 
@@ -51,10 +51,16 @@ class AuthController extends Controller
         $user = User::where('email',$request->email)->first();
 
         if ($user && $user->otp == $request->otp && $user->otp_expires_at && Carbon::now()->lt($user->otp_expires_at)) {
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Email Verified'
             ],200);
+            // $user->update([
+            //     'email_verified_at' => now(),
+            //     'otp' => null,
+            //     'otp_expires_at' => null
+            // ]);
             $user->update(['email_verified_at' => 1, 'otp' => null, 'otp_expires_at' => 0]);
         }else{
 
@@ -63,23 +69,52 @@ class AuthController extends Controller
 
     }
 
-    public function forgotOtp($id){
-        $user = User::find($id);
+    public function alluser(){
+        $user = Auth::user(); // یا auth()->user()
+
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+        ], 200);
+    }
+
+    public function forgotOtp(Request $request)
+    {
+        // Step 1: Validate email
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+    
+        // Step 2: Correctly find user by email
+        $user = User::where('email', $request->email)->first();
+    
+        // Step 3: Handle case where user is not found
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found with this email',
+            ], 404);
+        }
+    
+        // Step 4: Generate OTP and save
         $otp = rand(1000, 9999);
         $user->forgot_otp = $otp;
         $user->save();
+    
+        // Step 5: Send mail
         Mail::to($user->email)->send(new ForgotOtpMail($user));
-        if($user){
-            return response()->json([
-                'success' => true,
-                'message' => 'Record Get Successfully',
-                'user'    => $user
-            ],201);
-        }
+    
+        // Step 6: Return response
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP sent successfully',
+            'user'    => $user,
+        ], 201);
     }
+    
 
-    public function verifyForgotOtp(Request $request, $id) {
-        $user = User::find($id);
+    public function verifyForgotOtp(Request $request) {
+        $user = User::where('email',$request->email)->first();
         // return $user;
         $request->validate([
             'forgot_otp' => 'required|string',
@@ -128,8 +163,8 @@ class AuthController extends Controller
         ]);
     }
 
-    public function resetPassword(Request $request,$id){
-        $user = User::find($id);
+    public function resetPassword(Request $request){
+        $user = User::where('email',$request->email)->first();
 
         $request->validate([
             'password'  => 'required|confirmed'
@@ -159,8 +194,11 @@ class AuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
+    
         $credentials = $request->only('email', 'password');
+    
+        // Set token expiration time to 60 minutes
+        JWTAuth::factory()->setTTL(1440);
     
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json([
@@ -179,6 +217,7 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
+    
 
     
 

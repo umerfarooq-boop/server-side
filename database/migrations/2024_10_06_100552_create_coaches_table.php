@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('coach_location');
             $table->string('status')->default('active');
             $table->string('hasAccademy')->default('yes');
+            $table->integer('per_hour_charges')->default('100');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();

@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\player;
+use App\Models\Notification;
+use Illuminate\Http\Request;
 use App\Models\AssignEquipment;
 use App\Models\Request_Equipment;
-use Illuminate\Http\Request;
+use App\Models\PlayerNotification;
 use Illuminate\Support\Facades\Validator;
 
 class Request_EquipmentController extends Controller
@@ -72,6 +75,12 @@ class Request_EquipmentController extends Controller
                 'return_date_time' => $request->return_date_time,
             ]);
         }
+        $player = player::find($request->player_id);
+        Notification::create([
+            'coach_id' => $request->coach_id,
+            'player_id' => $request->player_id,
+            'message' => 'Your Have New Equipment From ' . $player->player_name,
+        ]);
 
         return response()->json([
             'success' => true,
@@ -79,61 +88,114 @@ class Request_EquipmentController extends Controller
         ], 201);
     }
 
-    public function AcceptEquipmentRequest($id)
+    public function AcceptEquipmentRequest(Request $request,$id)
     {
         $acceptRequest = Request_Equipment::find($id);
+        // return $acceptRequest;
         if (!$acceptRequest) {
             return response()->json([
                 'success' => false,
                 'message' => 'Equipment request not found.',
             ], 404);
         }
-
+    
+        // Check if already accepted
         if ($acceptRequest->equipment_status === 'active') {
             return response()->json([
                 'success' => false,
                 'message' => 'This request has already been accepted.',
             ], 400);
         }
-
+    
         $equipment = AssignEquipment::where('id', $acceptRequest->equipment_name_id)->first();
-
-        // Check if the equipment exists
+    
         if (!$equipment) {
             return response()->json([
                 'success' => false,
                 'message' => 'Assigned equipment not found.',
             ], 404);
         }
-
-        // Check if there's enough equipment available
+    
+        // Check if enough equipment is available
         if ($equipment->equipment_quantity < $acceptRequest->equipment_quantity) {
             return response()->json([
                 'success' => false,
                 'message' => 'Insufficient equipment quantity available.',
             ], 400);
         }
-
-        // Reduce the equipment quantity by the requested amount
-        $equipment->equipment_quantity -= $acceptRequest->equipment_quantity;
+    
+        // Deduct the requested quantity
+        $equipment->equipment_quantity -= $request->equipment_quantity;
         $equipment->save();
-
-        // Mark the request as active
+    
+        // Mark the request as accepted
         $acceptRequest->equipment_status = 'active';
+        $acceptRequest->equipment_quantity = $request->equipment_quantity;
         $acceptRequest->save();
 
-        // Return the response
+
+
+        PlayerNotification::create([
+                'coach_id' => $acceptRequest->coach_id,
+                'player_id' => $acceptRequest->player_id,
+                'message' => 'Equipment request is accepted ' . $acceptRequest->coach->name,
+            ]);
+    
         return response()->json([
             'success' => true,
-            'message' => 'Your request has been accepted.',
-            'acceptRequest' => $acceptRequest,
-            'equipment' => $equipment,
+            'message' => 'Equipment request has been accepted.',
+            'acceptRequest' => [
+                'id' => $acceptRequest->id,
+                'player_name' => $acceptRequest->player->player_name,
+                'equipment_name' => $equipment->equipment_name,
+                'equipment_quantity' => $acceptRequest->equipment_quantity,
+                'return_date_time' => $acceptRequest->return_date_time,
+                'equipment_status' => $acceptRequest->equipment_status,
+            ],
+            'remaining_equipment_quantity' => $equipment->equipment_quantity,
         ], 200);
     }
-    public function ReturnEquipment($id)
+    
+
+    public function show_return_equipment($id) {
+        $equipment_return = Request_Equipment::with(['player', 'coach', 'equipment'])
+            ->where('id', $id)
+            ->first();
+    
+        if (!$equipment_return) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Equipment not found.',
+            ], 404);
+        }
+    //// 
+    /// kinhg
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Found',
+            'equipment_return' => [
+                'id' => $equipment_return->id,
+                'player_id' => $equipment_return->player_id,
+                'player_name' => $equipment_return->player->player_name, // Show player name
+                'coach_id' => $equipment_return->coach_id,
+                'coach_name' => $equipment_return->coach->name,
+                'equipment_name_id' => $equipment_return->equipment_name_id, // Store equipment ID
+                'equipment_name' => $equipment_return->equipment->equipment_name, // Show equipment name
+                'equipment_quantity' => $equipment_return->equipment_quantity,
+                'equipment_status' => $equipment_return->equipment_status,
+                'return_date_time' => $equipment_return->return_date_time,
+                'created_at' => $equipment_return->created_at,
+                'updated_at' => $equipment_return->updated_at,
+            ],
+        ], 201);
+    }
+    
+
+
+    public function ReturnEquipment($id, Request $request)
     {
-        $equipmentRequest = Request_Equipment::find($id);
-        
+        $equipmentRequest = Request_Equipment::find($id); // here it get id of mysql table request__equipment mean match id
+    
         if (!$equipmentRequest) {
             return response()->json([
                 'success' => false,
@@ -141,48 +203,116 @@ class Request_EquipmentController extends Controller
             ], 404);
         }
     
+        $returnedQuantity = $request->input('equipment_quantity');
+        if ($returnedQuantity > $equipmentRequest->equipment_quantity) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Returned quantity exceeds the requested quantity.',
+            ], 400);
+        }
+    
         // Find the assigned equipment based on equipment_name_id
         $assignedEquipment = AssignEquipment::where('id', $equipmentRequest->equipment_name_id)->first();
     
         if ($assignedEquipment) {
-            // Update quantity
-            $assignedEquipment->equipment_quantity += $equipmentRequest->equipment_quantity;
+            // Update the quantity in AssignEquipment
+            $assignedEquipment->equipment_quantity += $returnedQuantity;
             $assignedEquipment->save();
         }
     
-        // Delete the request record
-        $equipmentRequest->delete();
+        // Update the remaining quantity in Request_Equipment
+        $remainingQuantity = $equipmentRequest->equipment_quantity - $returnedQuantity;
+        if ($remainingQuantity > 0) {
+            $equipmentRequest->equipment_quantity = $remainingQuantity;
+            $equipmentRequest->save();
+        } else {
+            // Delete the request if all equipment is returned
+            $equipmentRequest->delete();
+        }
     
         return response()->json([
             'success' => true,
             'message' => 'Equipment returned successfully',
             'updated_quantity' => $assignedEquipment ? $assignedEquipment->equipment_quantity : null,
+            'remaining_quantity' => $remainingQuantity,
         ], 200);
     }
     
 
+    
+
     public function DeleteEquipmentRequest($id)
     {
-        $equipment = Request_Equipment::find($id);
+        // Get equipment with player and coach
+        $equipment = Request_Equipment::with(['player', 'coach'])->find($id);
+    
+        if (!$equipment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Equipment request not found',
+            ], 404);
+        }
+    
+        $coach = $equipment->coach;
+        $player = $equipment->player;
+    
+        // Ensure both coach and player exist
+        if (!$coach || !$player) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Coach or Player not found for this equipment request',
+            ], 400);
+        }
+    
+        // Create player notification using correct IDs
+        PlayerNotification::create([
+            'coach_id' => $coach->id, // ✅ Use `id` instead of `coach_id`
+            'player_id' => $player->id, // ✅ Use `id` instead of `player_id`
+            'message' => 'Equipment request is Rejected by ' . $coach->name,
+        ]);
+    
+        // Delete the equipment request
         $equipment->delete();
+    
         return response()->json([
             'success' => true,
-            'message' => 'Record Delete Successfully',
-        ], 201);
+            'message' => 'Record deleted successfully',
+        ], 200);
     }
+    
+    
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $equipment = Request_Equipment::with(['coach', 'player', 'equipment'])->where('coach_id', $id)->get();
+        $equipment = Request_Equipment::with(['coach', 'player', 'equipment'])
+            ->where('coach_id', $id)
+            ->orWhere('id', $id)->orWhere('player_id',$id)
+            ->get();
+    
         return response()->json([
             'success' => true,
-            'message' => 'Record Get Successfully',
-            'requestequipment' => $equipment,
-        ], 201);
+            'message' => 'Record retrieved successfully',
+            'requestequipment' => $equipment->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'player_id' => $item->player_id,
+                    'player_name' => $item->player->player_name, // Show player name
+                    'coach_id' => $item->coach_id,
+                    'equipment_name_id' => $item->equipment_name_id, // Store equipment ID
+                    'equipment_name' => $item->equipment->equipment_name, // Show equipment name
+                    'equipment_quantity' => $item->equipment_quantity,
+                    'equipment_status' => $item->equipment_status,
+                    'return_date_time' => $item->return_date_time,
+                    'created_at' => $item->created_at,
+                    'updated_at' => $item->updated_at,
+                ];
+            }),
+        ], 200);
     }
+    
 
     /**
      * Show the form for editing the specified resource.

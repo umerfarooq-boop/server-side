@@ -7,6 +7,7 @@ use App\Models\Academy;
 use Illuminate\Http\Request;
 use App\Models\SportCategory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CoachController extends Controller
@@ -55,7 +56,7 @@ class CoachController extends Controller
     
     public function changeStatus($id){
         $coach = Coach::find($id);
-        if($coach->status == 'acitve'){
+        if($coach->status == 'active'){
             $coach->status = 'block';
         }else{
             $coach->status = 'active';
@@ -63,7 +64,7 @@ class CoachController extends Controller
         $coach->save();
         return response()->json([
             'status' => true,
-            'message' => 'Status Updated Successfully',
+            'message' => 'Status Updated Successfullylll',
             'user'  => $coach
         ]);
     }
@@ -112,10 +113,12 @@ class CoachController extends Controller
         $coach->experience = $request->experience;
         $coach->level = $request->level;
         $coach->phone_number = $request->phone_number;
+        $coach->per_hour_charges = $request->per_hour_charges;
         $coach->coach_location = $request->coach_location;
         $coach->status = $request->status;
         $coach->certificate = $certificateName;
         $coach->image = $coach_image_name;
+        $coach->created_by = Auth::id();
         $coach->save();
 
         return response()->json([
@@ -189,7 +192,8 @@ class CoachController extends Controller
             'academy_location' => 'required|string|max:255',
             'address' => 'required|string|max:255',
             'academy_phonenumber' => 'required|string|max:15',
-            'academy_certificate' => 'nullable|mimes:pdf|max:2048', // Ensure academy certificate is a PDF
+            'academy_certificate' => 'nullable|mimes:pdf|max:2048',
+            'per_hour_charges' => 'required',
         ]);
 
         if ($validation->fails()) {
@@ -214,6 +218,7 @@ class CoachController extends Controller
         $coach->level = $request->level;
         $coach->phone_number = $request->phone_number;
         $coach->coach_location = $request->coach_location;
+        $coach->per_hour_charges = $request->per_hour_charges;
 
         // Handle optional file uploads for coach
         if ($request->hasFile('image')) {

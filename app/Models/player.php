@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class player extends Model
 {
     use HasFactory;
-
+    // use Notifiable;
     protected $fillable = [
         'player_name',
         'cat_id',
@@ -25,6 +25,19 @@ class player extends Model
         'location',
     ];
 
+
+    public function reatingreviews(){
+        return $this->hasMany(RatingReviews::class,'player_id','id');
+    }
+
+    public function user(){
+        return $this->hasMany(User::class,'user_id','id');
+    }
+
+    public function returnequipment(){
+        return $this->hasMany(ReturnEquipment::class,'player_id','id');
+    }
+
     public function request_equipment(){
         return $this->hasMany(Request_Equipment::class,'player_id','id');
     }
@@ -39,6 +52,10 @@ class player extends Model
 
     public function attendance(){
         return $this->hasMany(Attendence::class,'player_id','id');
+    }
+
+    public function playernotification(){
+        return $this->hasMany(PlayerNotification::class,'player_id','id');
     }
 
     public function notification(){
