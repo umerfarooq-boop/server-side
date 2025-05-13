@@ -51,11 +51,11 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/resend-otp',[AuthController::class,'resendOtp']);
 
 // Forgot Password OTP
-Route::post('/forgotOtp/{id}',[AuthController::class,'forgotOtp']);
+Route::post('/forgotOtp',[AuthController::class,'forgotOtp']);
 // Forgot Password OTP
 
 // verify Forgot OTP
-Route::post('/verifyForgotOtp/{id}', [AuthController::class, 'verifyForgotOtp']);
+Route::post('/verifyForgotOtp', [AuthController::class, 'verifyForgotOtp']);
 // verify Forgot OTP
 
 // Resend Forgot OTP
@@ -63,7 +63,7 @@ Route::post('/ForgotResendOtp', [AuthController::class, 'ForgotResendOtp']);
 // Resend Forgot OTP
 
 // Reset Password
-Route::post('/resetPassword/{id}',[AuthController::class,'resetPassword']);
+Route::post('/resetPassword',[AuthController::class,'resetPassword']);
 // Reset Password
 
 // Show coahc_record in front of Website
@@ -182,6 +182,10 @@ Route::post('/markNotificationAsRead/{coach_id}', [NotificationController::class
 Route::get('/getNotificationsPlayer/{player_id}', [NotificationController::class, 'getNotificationsPlayer']);
 // Get Player Notfication of Coach
 
+// Mark Player Notification Read
+Route::post('/markPlayerNotificationAsRead/{player_id}', [NotificationController::class, 'markPlayerNotificationAsRead']);
+// Mark Player Notification Read
+
 // Show Coach Bookings on Calender
 Route::get('/showCoachBookings/{id}',[CoachScheduleController::class,'showCoachBookings']);
 // Show Coach Bookings on Calender
@@ -193,6 +197,12 @@ Route::get('/fetchBookedSlots/{id}',[CoachScheduleController::class,'fetchBooked
 // Mark Attendance
 Route::post('/markAttendance/{id}',[AttendanceController::class,'markAttendance']);
 // Mark Attendance
+
+Route::get('reject_edit_appointment/{id}',[CoachScheduleController::class,'RejectEditAppointment']);
+
+// Edit Attendance
+Route::get('/edit_attendance/{id}',[AttendanceController::class,'EditAttendance']);
+// Edit Attendance
 
 // Edit Appointment
 Route::get('/get_edit_appointment/{id}',[CoachScheduleController::class,'GetEditAppointmentRecord']);

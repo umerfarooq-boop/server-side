@@ -365,6 +365,112 @@ class CoachScheduleController extends Controller
     /**
      * Store a newly created resource in storage. Create Appointment For Individual
      */
+    // public function store(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'coach_id' => 'required',
+    //         'player_id' => 'required',
+    //         'start_time' => 'required',
+    //         'end_time' => 'required',
+    //         'booking_slot' => 'required',
+    //         'event_name' => 'required',
+    //         'to_date' => 'required|date',
+    //         'from_date' => 'required|date',
+    //         'status' => 'required',
+    //         'booking_count' => 'required',
+    //         'playwith' => 'required'
+    //     ]);
+    
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Validation errors occurred',
+    //             'error' => $validator->errors(),
+    //         ], 401);
+    //     }
+    
+    //     // ✅ Check if player already booked for the day
+    //     $existingBooking = CoachSchedule::where('coach_id', $request->coach_id)
+    //         ->where('player_id', $request->player_id)
+    //         ->where('from_date', $request->from_date)
+    //         ->exists();
+    
+    //     if ($existingBooking) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'You have already booked an appointment with this coach on this date.',
+    //         ], 403);
+    //     }
+    
+    //     // ✅ Check coach's daily limit
+    //     $dailyBookings = CoachSchedule::where('coach_id', $request->coach_id)
+    //         ->where('from_date', $request->from_date)
+    //         ->count();
+    
+    //     if ($dailyBookings >= 10) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'This coach has reached the daily appointment limit.',
+    //         ], 403);
+    //     }
+    
+    //     // ✅ Check slot conflicts using playwith rules
+    //     $slotBookings = CoachSchedule::where('coach_id', $request->coach_id)
+    //         ->where('from_date', $request->from_date)
+    //         ->where('start_time', $request->start_time)
+    //         ->where('end_time', $request->end_time)
+    //         ->get();
+    
+    //     $individualExists = $slotBookings->where('playwith', 'individual')->count() > 0;
+    //     $teamCount = $slotBookings->where('playwith', 'team')->count();
+    
+    //     if ($request->playwith == 'individual') {
+    //         if ($individualExists || $teamCount >= 1) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'This slot is already booked. Choose a different time.',
+    //             ], 403);
+    //         }
+    //     } elseif ($request->playwith == 'team') {
+    //         if ($individualExists || $teamCount >= 2) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'This slot is fully booked for team. Choose a different time.',
+    //             ], 403);
+    //         }
+    //     }
+    
+    //     // ✅ Create booking
+    //     $coach = new CoachSchedule();
+    //     $coach->coach_id = $request->coach_id;
+    //     $coach->player_id = $request->player_id;
+    //     $coach->start_time = $request->start_time;
+    //     $coach->end_time = $request->end_time;
+    //     $coach->booking_slot = $request->booking_slot;
+    //     $coach->to_date = $request->to_date;
+    //     $coach->from_date = $request->from_date;
+    //     $coach->event_name = $request->event_name;
+    //     $coach->status = $request->status;
+    //     $coach->booking_count = $request->booking_count;
+    //     $coach->playwith = $request->playwith;
+    //     $coach->created_by = Auth::id();
+    //     $coach->save();
+    
+    //     $coach->load('player', 'coach');
+    
+    //     Notification::create([
+    //         'coach_id' => $request->coach_id,
+    //         'player_id' => $request->player_id,
+    //         'message' => 'You have a new booking from Player ' . $coach->player->player_name,
+    //     ]);
+    
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Record Saved Successfully',
+    //         'coach' => $coach,
+    //     ], 201);
+    // }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -389,7 +495,26 @@ class CoachScheduleController extends Controller
             ], 401);
         }
     
-        // ✅ Check if player already booked for the day
+        // ✅ Check if player has any existing booking overlapping this date range (with any coach)
+        $overlappingBooking = CoachSchedule::where('player_id', $request->player_id)
+            ->where(function ($query) use ($request) {
+                $query->whereBetween('from_date', [$request->from_date, $request->to_date])
+                      ->orWhereBetween('to_date', [$request->from_date, $request->to_date])
+                      ->orWhere(function ($query2) use ($request) {
+                          $query2->where('from_date', '<=', $request->from_date)
+                                 ->where('to_date', '>=', $request->to_date);
+                      });
+            })
+            ->exists();
+    
+        if ($overlappingBooking) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You not book new Appointment. Already Booked',
+            ], 403);
+        }
+    
+        // ✅ Check if player already booked for the day with this coach
         $existingBooking = CoachSchedule::where('coach_id', $request->coach_id)
             ->where('player_id', $request->player_id)
             ->where('from_date', $request->from_date)
@@ -470,6 +595,18 @@ class CoachScheduleController extends Controller
             'coach' => $coach,
         ], 201);
     }
+
+    public function RejectEditAppointment($id){
+        $Reject = EditAppointment::find($id);
+        $Reject->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Delete Successfully',
+        ],201);
+    }
+    
+
 
     public function fetchBookedSlots(Request $request, $coach_id)
     {

@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\player;
+use App\Models\Notification;
+use Illuminate\Http\Request;
 use App\Models\AssignEquipment;
 use App\Models\Request_Equipment;
-use Illuminate\Http\Request;
+use App\Models\PlayerNotification;
 use Illuminate\Support\Facades\Validator;
 
 class Request_EquipmentController extends Controller
@@ -72,6 +75,12 @@ class Request_EquipmentController extends Controller
                 'return_date_time' => $request->return_date_time,
             ]);
         }
+        $player = player::find($request->player_id);
+        Notification::create([
+            'coach_id' => $request->coach_id,
+            'player_id' => $request->player_id,
+            'message' => 'Your Have New Equipment From ' . $player->player_name,
+        ]);
 
         return response()->json([
             'success' => true,
@@ -123,6 +132,14 @@ class Request_EquipmentController extends Controller
         $acceptRequest->equipment_status = 'active';
         $acceptRequest->equipment_quantity = $request->equipment_quantity;
         $acceptRequest->save();
+
+
+
+        PlayerNotification::create([
+                'coach_id' => $acceptRequest->coach_id,
+                'player_id' => $acceptRequest->player_id,
+                'message' => 'Equipment request is accepted ' . $acceptRequest->coach->name,
+            ]);
     
         return response()->json([
             'success' => true,
@@ -226,13 +243,44 @@ class Request_EquipmentController extends Controller
 
     public function DeleteEquipmentRequest($id)
     {
-        $equipment = Request_Equipment::find($id);
+        // Get equipment with player and coach
+        $equipment = Request_Equipment::with(['player', 'coach'])->find($id);
+    
+        if (!$equipment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Equipment request not found',
+            ], 404);
+        }
+    
+        $coach = $equipment->coach;
+        $player = $equipment->player;
+    
+        // Ensure both coach and player exist
+        if (!$coach || !$player) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Coach or Player not found for this equipment request',
+            ], 400);
+        }
+    
+        // Create player notification using correct IDs
+        PlayerNotification::create([
+            'coach_id' => $coach->id, // ✅ Use `id` instead of `coach_id`
+            'player_id' => $player->id, // ✅ Use `id` instead of `player_id`
+            'message' => 'Equipment request is Rejected by ' . $coach->name,
+        ]);
+    
+        // Delete the equipment request
         $equipment->delete();
+    
         return response()->json([
             'success' => true,
-            'message' => 'Record Delete Successfully',
-        ], 201);
+            'message' => 'Record deleted successfully',
+        ], 200);
     }
+    
+    
 
     /**
      * Display the specified resource.

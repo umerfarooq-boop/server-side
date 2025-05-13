@@ -53,6 +53,11 @@ class Coach extends Model
         return $this->hasMany(Attendacne::class,'coach_id','id');
     }
 
+    public function playernotifications()
+    {
+        return $this->hasMany(PlayerNotification::class, 'coach_id','id');
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class, 'coach_id','id');

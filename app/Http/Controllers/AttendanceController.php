@@ -73,7 +73,7 @@ class AttendanceController extends Controller
         $attendance = Attendence::with(['schedule', 'player'])
             ->where('player_id', $id)
             ->whereDate('from_date', '<=', $today)
-            ->orderBy('date', 'desc')
+            ->orderBy('date', 'asc')
             ->get();
 
         return response()->json([
@@ -141,7 +141,17 @@ class AttendanceController extends Controller
     
 
 
+    public function EditAttendance($id){
+        $editAttendance = Attendence::find($id);
+        $editAttendance->attendance_status = null;
+        $editAttendance->save();
 
+        return response()->json([
+            'success' => true,
+            'message' => 'Attendance Edit Successfully',
+            'editAttendance' => $editAttendance
+        ]);
+    }
 
 
     

@@ -78,23 +78,43 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function forgotOtp($id){
-        $user = User::find($id);
+    public function forgotOtp(Request $request)
+    {
+        // Step 1: Validate email
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+    
+        // Step 2: Correctly find user by email
+        $user = User::where('email', $request->email)->first();
+    
+        // Step 3: Handle case where user is not found
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found with this email',
+            ], 404);
+        }
+    
+        // Step 4: Generate OTP and save
         $otp = rand(1000, 9999);
         $user->forgot_otp = $otp;
         $user->save();
+    
+        // Step 5: Send mail
         Mail::to($user->email)->send(new ForgotOtpMail($user));
-        if($user){
-            return response()->json([
-                'success' => true,
-                'message' => 'Record Get Successfully',
-                'user'    => $user
-            ],201);
-        }
+    
+        // Step 6: Return response
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP sent successfully',
+            'user'    => $user,
+        ], 201);
     }
+    
 
-    public function verifyForgotOtp(Request $request, $id) {
-        $user = User::find($id);
+    public function verifyForgotOtp(Request $request) {
+        $user = User::where('email',$request->email)->first();
         // return $user;
         $request->validate([
             'forgot_otp' => 'required|string',
@@ -143,8 +163,8 @@ class AuthController extends Controller
         ]);
     }
 
-    public function resetPassword(Request $request,$id){
-        $user = User::find($id);
+    public function resetPassword(Request $request){
+        $user = User::where('email',$request->email)->first();
 
         $request->validate([
             'password'  => 'required|confirmed'

@@ -54,6 +54,10 @@ class player extends Model
         return $this->hasMany(Attendence::class,'player_id','id');
     }
 
+    public function playernotification(){
+        return $this->hasMany(PlayerNotification::class,'player_id','id');
+    }
+
     public function notification(){
         return $this->hasMany(Notification::class,'player_id','id');
     }
