@@ -240,6 +240,14 @@ Route::post('/AcceptEquipmentRequest/{id}',[Request_EquipmentController::class,'
 Route::get('/DeleteEquipmentRequest/{id}',[Request_EquipmentController::class,'DeleteEquipmentRequest']);
 // DeleteEquipmentRequest
 
+// Notify Player About Payment
+Route::post('/NotifyPlayertoPayment',[CoachScheduleController::class,'NotifyPlayertoPayment']);
+// Notify Player About Payment
+
+// Notify Player About Payment
+Route::post('/NotifyEditPlayertoPayment',[CoachScheduleController::class,'NotifyEditPlayertoPayment']);
+// Notify Player About Payment
+
 // Return Equipment
 Route::post('/ReturnEquipment/{id}',[Request_EquipmentController::class,'ReturnEquipment']);
 // Return Equipment

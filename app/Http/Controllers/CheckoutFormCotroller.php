@@ -90,6 +90,10 @@ class CheckoutFormCotroller extends Controller
         }
     }
 
+    public function EditCheckout(string $id){
+        
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
