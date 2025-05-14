@@ -155,6 +155,7 @@ class AuthController extends Controller
         $user->save();
         
         Mail::to($user->email)->send(new ForgotOtpMail($user));
+        
         return response()->json([
             'success' => true,
             'message' => 'Another OTP send on Your Email',

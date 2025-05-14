@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\player;
 use App\Models\Emergency;
 use App\Models\Attendence;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 use App\Models\CoachSchedule;
 use Illuminate\Support\Carbon;
 use App\Models\EditAppointment;
+use App\Mail\NotifyPlayerPayment;
+use App\Models\PlayerNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -37,7 +40,7 @@ class CoachScheduleController extends Controller
     // Get Record Fom Edit Appointment
     public function GetEditAppointmentRecord($id)
     {
-        $editappointments = EditAppointment::where('player_id', $id)->first();
+        $editappointments = EditAppointment::with(['coach_schedule','coach'])->where('player_id', $id)->first();
 
         $editappointments->load('player.sportCategory');
 
@@ -283,20 +286,30 @@ class CoachScheduleController extends Controller
             'event_name' => 'required',
             'start_time' => 'required',
         ]);
-
+    
         // Find the coach schedule
         $coach = CoachSchedule::find($id);
-
+    
         if (!$coach) {
             return response()->json([
                 'status' => false,
                 'message' => 'Coach schedule not found.',
             ], 404);
         }
-
+    
+        // Calculate count_days as extended days after the original CoachSchedule.to_date
+        $originalToDate = new \DateTime($coach->to_date);
+        $newToDate = new \DateTime($validated['to_date']);
+    
+        $countDays = 0;
+        if ($newToDate > $originalToDate) {
+            $interval = $originalToDate->diff($newToDate);
+            $countDays = $interval->days; // Only extra days
+        }
+    
         // Check if an appointment already exists for the player
         $existingAppointment = EditAppointment::where('player_id', $coach->player_id)->first();
-
+    
         if ($existingAppointment) {
             // Update the existing appointment
             $existingAppointment->coach_id = $coach->coach_id;
@@ -308,8 +321,10 @@ class CoachScheduleController extends Controller
             $existingAppointment->start_time = $validated['start_time'];
             $existingAppointment->coach_schedule_id = $coach->id;
             $existingAppointment->status = 'processing';
+            $existingAppointment->count_days = $countDays;
+            $existingAppointment->created_by = $request->created_by;
             $existingAppointment->save();
-
+    
             return response()->json([
                 'status' => true,
                 'message' => 'Appointment updated successfully!',
@@ -328,8 +343,10 @@ class CoachScheduleController extends Controller
             $newAppointment->start_time = $validated['start_time'];
             $newAppointment->coach_schedule_id = $coach->id;
             $newAppointment->status = 'processing';
+            $newAppointment->count_days = $countDays;
+            $newAppointment->created_by = $request->created_by;
             $newAppointment->save();
-
+    
             return response()->json([
                 'status' => true,
                 'message' => 'Appointment created successfully!',
@@ -337,6 +354,7 @@ class CoachScheduleController extends Controller
             ], 200);
         }
     }
+    
 
 
     /**
@@ -579,6 +597,9 @@ class CoachScheduleController extends Controller
         $coach->booking_count = $request->booking_count;
         $coach->playwith = $request->playwith;
         $coach->created_by = Auth::id();
+        $fromDate = Carbon::parse($request->from_date);
+        $toDate = Carbon::parse($request->to_date);
+        $coach->count_days = $fromDate->diffInDays($toDate) + 1; 
         $coach->save();
     
         $coach->load('player', 'coach');
@@ -748,6 +769,90 @@ class CoachScheduleController extends Controller
             'coach' => $coach,
         ], 201);
     }
+
+    public function NotifyPlayertoPayment(Request $request)
+    {
+        // Fetch the coach schedule along with related player and coach data
+        $paymentNotify = CoachSchedule::with(['player', 'coach'])
+            ->where('id', $request->id)
+            ->first();
+    
+        // Check if the record exists
+        if (!$paymentNotify) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No record found',
+            ], 404);
+        }
+    
+        // Extract related entities
+        $coach = $paymentNotify->coach;
+        $player = $paymentNotify->player;
+    
+        // Fetch the user who created the record
+        $user = User::find($paymentNotify->created_by);
+
+            Mail::to($user->email)->send(new NotifyPlayerPayment($player->player_name));
+
+    
+        // Create a player notification record
+        PlayerNotification::create([
+            'coach_id' => $coach->id,
+            'player_id' => $player->id,
+            'message' => 'Please Pay the Payment to ' . $coach->name,
+        ]);
+    
+        // Return the response with relevant data
+        return response()->json([
+            'success' => true,
+            'message' => 'Player notified successfully.',
+            'paymentNotify' => $paymentNotify,
+            'userRecord' => $user,
+        ], 201);
+    }
+
+    public function NotifyEditPlayertoPayment(Request $request)
+    {
+        // Fetch the coach schedule along with related player and coach data
+        $paymentNotify = EditAppointment::with(['player', 'coach'])
+            ->where('id', $request->id)
+            ->first();
+    
+        // Check if the record exists
+        if (!$paymentNotify) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No record found',
+            ], 404);
+        }
+    
+        // Extract related entities
+        $coach = $paymentNotify->coach;
+        $player = $paymentNotify->player;
+    
+        // Fetch the user who created the record
+        $user = User::find($paymentNotify->created_by);
+
+            Mail::to($user->email)->send(new NotifyPlayerPayment($player->player_name));
+
+    
+        // Create a player notification record
+        PlayerNotification::create([
+            'coach_id' => $coach->id,
+            'player_id' => $player->id,
+            'message' => 'Please Pay the Payment to ' . $coach->name,
+        ]);
+    
+        // Return the response with relevant data
+        return response()->json([
+            'success' => true,
+            'message' => 'Player notified successfully.',
+            'paymentNotify' => $paymentNotify,
+            'userRecord' => $user,
+        ], 201);
+    }
+    
+    
 
     // public function fetchBookedSlotsTeam(Request $request, $coach_id)
     // {

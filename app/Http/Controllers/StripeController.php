@@ -12,6 +12,7 @@ use Stripe\PaymentIntent;
 use App\Models\CheckoutForm;
 use Illuminate\Http\Request;
 use App\Mail\PaymentReceived;
+use App\Models\CoachSchedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -273,6 +274,14 @@ public function createPaymentIntent(Request $request)
                     'updated_at'     => now(),
                 ]);
 
+                $schedule = CoachSchedule::where('created_by', Auth::id())->first();
+            if ($schedule) {
+                $schedule->payment_status = 'paid';
+                $schedule->save();
+            } else {
+                return response()->json(['error' => 'Schedule not found'], 404);
+            }
+
                 // Fetch coach and user models
                 $coachUser = User::find($request->coach_user_id);
                 $coach     = Coach::find($request->coach_id);
@@ -287,6 +296,11 @@ public function createPaymentIntent(Request $request)
                 return response()->json(['message' => 'Payment stored and invoice sent successfully']);
             }
 
+
+            
+
+
+
             return response()->json(['error' => 'Payment not verified'], 400);
 
         } catch (\Exception $e) {
@@ -295,7 +309,7 @@ public function createPaymentIntent(Request $request)
     }
 
 
-
+ 
     protected function sendInvoiceToCoach($player, $coachUser, $coach, $amount, $paymentId)
     {
         $pdf = Pdf::loadView('emails.payment-received', [
