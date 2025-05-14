@@ -150,13 +150,13 @@
                 <tbody>
                     <tr>
                         <td>Coaching Session Payment</td>
-                        <td>{{ number_format($amount, 2) }} PKR</td>
+                        <td>{{ $amount }} PKR</td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
                         <td class="total-label">Total Paid</td>
-                        <td class="total-amount">{{ number_format($amount, 2) }} PKR</td>
+                        <td class="total-amount">{{ $amount }} PKR</td>
                     </tr>
                 </tfoot>
             </table>

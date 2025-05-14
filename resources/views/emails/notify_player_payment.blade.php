@@ -8,7 +8,7 @@
             font-family: Arial, sans-serif;
             line-height: 1.6;
             background-color: #f9f9f9;
-            color: #333;
+            color: #000;
             margin: 0;
             padding: 20px;
         }
@@ -21,7 +21,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         h1 {
-            color: #555;
+            color: #000;
         }
         .btn {
             display: inline-block;

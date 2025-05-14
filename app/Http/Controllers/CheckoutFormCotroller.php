@@ -56,7 +56,21 @@ class CheckoutFormCotroller extends Controller
                 'error' => $validator->errors()
             ], 422);
         }
-
+    
+        $existingRecord = CheckoutForm::where('player_id', $request->player_id)
+        ->where('booking_id', $request->booking_id)
+        ->first();
+    
+        if ($existingRecord) {
+            $existingRecord->update($request->all());
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Record updated successfully',
+                'data' => $existingRecord
+            ], 200);
+        }
+    
         $newRecord = CheckoutForm::create($request->all());
     
         return response()->json([
@@ -65,6 +79,7 @@ class CheckoutFormCotroller extends Controller
             'data' => $newRecord
         ], 201);
     }
+    
 
     /**
      * 
