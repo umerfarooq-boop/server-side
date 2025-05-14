@@ -286,6 +286,17 @@ class CoachScheduleController extends Controller
             'event_name' => 'required',
             'start_time' => 'required',
         ]);
+
+        $startTime = Carbon::parse($request->start_time);
+        $endTime = Carbon::parse($request->end_time);
+        $durationInMinutes = $startTime->diffInMinutes($endTime);
+
+        if ($durationInMinutes > 60) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can only book a session for one hour. Please adjust the time.',
+            ], 403);
+        }
     
         // Find the coach schedule
         $coach = CoachSchedule::find($id);
@@ -554,6 +565,17 @@ class CoachScheduleController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'This coach has reached the daily appointment limit.',
+            ], 403);
+        }
+
+        $startTime = Carbon::parse($request->start_time);
+        $endTime = Carbon::parse($request->end_time);
+        $durationInMinutes = $startTime->diffInMinutes($endTime);
+
+        if ($durationInMinutes > 60) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can only book a session for one hour. Please adjust the time.',
             ], 403);
         }
     

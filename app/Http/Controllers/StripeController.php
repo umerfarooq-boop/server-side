@@ -291,7 +291,16 @@ public function createPaymentIntent(Request $request)
                 }
 
                 // Send invoice
-                $this->sendInvoiceToCoach(Auth::user(), $coachUser, $coach, $request->amount, $paymentIntent->id);
+                // $this->sendInvoiceToCoach(Auth::user(), $coachUser, $coach, $request->amount, $paymentIntent->id);
+
+                $this->sendInvoiceToCoach(
+                    Auth::user(),
+                    $coachUser,
+                    $coach,
+                    $paymentIntent->amount, // this is the correct amount in cents
+                    $paymentIntent->id
+                );
+                
 
                 return response()->json(['message' => 'Payment stored and invoice sent successfully']);
             }
