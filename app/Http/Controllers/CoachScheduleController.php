@@ -38,18 +38,38 @@ class CoachScheduleController extends Controller
     }
 
     // Get Record Fom Edit Appointment
+    // public function GetEditAppointmentRecord($id)
+    // {
+    //     $editappointments = EditAppointment::with(['coach_schedule','coach'])->where('player_id', $id)->first();
+
+    //     $editappointments->load('player.sportCategory');
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Record fetched successfully',
+    //         'editappointment' => $editappointments,
+    //     ], 200);
+    // }
+
     public function GetEditAppointmentRecord($id)
     {
-        $editappointments = EditAppointment::with(['coach_schedule','coach'])->where('player_id', $id)->first();
+        $editappointments = EditAppointment::with(['coach_schedule', 'coach'])->where('player_id', $id)->first();
 
-        $editappointments->load('player.sportCategory');
+        if ($editappointments) {
+            // $editappointments->load('player.sportCategory');
+            return response()->json([
+                'success' => true,
+                'message' => 'Record fetched successfully',
+                'editappointment' => $editappointments,
+            ], 200);
+        }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Record fetched successfully',
-            'editappointment' => $editappointments,
-        ], 200);
+            'success' => false,
+            'message' => 'No record found for the given player ID.',
+        ], 404);
     }
+
 
     // Get Record Fom Edit Appointment
 
@@ -675,38 +695,6 @@ class CoachScheduleController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // Create Appointment for Team
 
     public function TeamBooking(Request $request)
@@ -907,6 +895,15 @@ class CoachScheduleController extends Controller
             'success' => true,
             'message' => 'Record Get Successfully',
             'emergency' => $emergency
+        ],201);
+    }
+
+    public function FetchEmergencyRecordParent($parent_id){
+        $emergency = Emergency::with(['player','PlayerParent'])->where('parent_id',$parent_id)->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'Record Get Successfully',
+            'parentEmergency' => $emergency
         ],201);
     }
 

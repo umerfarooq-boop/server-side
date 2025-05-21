@@ -218,8 +218,8 @@ public function createPaymentIntent(Request $request)
 
     try {
         $paymentIntent = PaymentIntent::create([
-            // 'amount' => $request->amount,
-            'amount' => 10000,
+            // 'amount' => ,
+            'amount' => $request->amount,
             'currency' => 'usd',
             'payment_method_types' => ['card'],
             'application_fee_amount' => 100, // Optional: fee for your platform (e.g., $1)

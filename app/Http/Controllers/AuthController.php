@@ -198,8 +198,7 @@ class AuthController extends Controller
     
         $credentials = $request->only('email', 'password');
     
-        // Set token expiration time to 60 minutes
-        JWTAuth::factory()->setTTL(1440);
+        JWTAuth::factory()->setTTL(60);
     
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json([

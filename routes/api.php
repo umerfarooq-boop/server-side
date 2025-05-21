@@ -204,6 +204,10 @@ Route::get('reject_edit_appointment/{id}',[CoachScheduleController::class,'Rejec
 Route::get('/edit_attendance/{id}',[AttendanceController::class,'EditAttendance']);
 // Edit Attendance
 
+// Create Coach Account By Admin
+Route::post('/GetCoachAccount',[CoachController::class,'GetCoachAccount']);
+// Create Coach Account By Admin
+
 // Edit Appointment
 Route::get('/get_edit_appointment/{id}',[CoachScheduleController::class,'GetEditAppointmentRecord']);
 // Edit Appointment
@@ -243,7 +247,7 @@ Route::get('/DeleteEquipmentRequest/{id}',[Request_EquipmentController::class,'D
 // Notify Player About Payment
 Route::post('/NotifyPlayertoPayment',[CoachScheduleController::class,'NotifyPlayertoPayment']);
 // Notify Player About Payment
-
+        
 // Notify Player About Payment
 Route::post('/NotifyEditPlayertoPayment',[CoachScheduleController::class,'NotifyEditPlayertoPayment']);
 // Notify Player About Payment
@@ -289,6 +293,7 @@ Route::post('/store-payment', [StripeController::class, 'storePayment'])->middle
 // Emergency Record Get Player Data From CoachSchedule Table
 Route::get('/FetchEmergencyRecord/{id}',[CoachScheduleController::class,'FetchEmergencyRecord']);
 Route::post('/send_emergency',[CoachScheduleController::class,'StoreEmergencyRecord']);
+Route::get('/FetchEmergencyRecordParent/{id}',[CoachScheduleController::class,'FetchEmergencyRecordParent']);
 // Emergency Record Get Player Data From CoachSchedule Table
 
 // Get Invoice Accoring to Coach Auth ID

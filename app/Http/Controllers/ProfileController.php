@@ -43,7 +43,6 @@ class ProfileController extends Controller
     {
         //
     }
-
     public function store(Request $request)
     {
         // Validate common fields for all roles
@@ -142,7 +141,8 @@ class ProfileController extends Controller
             // $profile->user_id = $coach->id;
             // $profile->user_id = $request->user_id;
 
-            Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
+            /**
+             * Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
 
         $user = User::find($profile->user_id); // 👈 get user from profile
         
@@ -178,6 +178,10 @@ class ProfileController extends Controller
 
         }
 
+             * 
+             */
+
+        }
         // If the role is 'player'
         if ($request->role === 'player') {
             $request->validate([
@@ -260,7 +264,7 @@ class ProfileController extends Controller
             'player'   => $profile->player_id ?? null,
             'location' => $profile->profile_location ?? null,
             'profile' => $profile,
-            'url' => $profile->role === 'coach' ? $accountLink->url : null,
+            
         ], 201);
     }
 

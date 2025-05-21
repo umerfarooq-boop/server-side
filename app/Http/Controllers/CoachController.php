@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Coach;
+use App\Models\User;
 use App\Models\Academy;
 use Illuminate\Http\Request;
 use App\Models\SportCategory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Stripe\Stripe;
+use Stripe\Account;
+use Stripe\AccountLink;
 
 class CoachController extends Controller
 {
@@ -24,6 +28,87 @@ class CoachController extends Controller
             'coach' => $sport
         ],201);
     }
+
+    public function GetCoachAccount(Request $request)
+{
+    Stripe::setApiKey('sk_test_51RCqM3FLwCatna2ik8SxyUUYcbizqdBwTjdavv9hkaMF6w5tLK5RAKMYxdcIRqlcc4JUL4VMGwem5yxGvUjsIFkH00GwZqlgEQ');
+
+    // Step 1: Get coach and associated user
+    $coach = Coach::find($request->id);
+
+    if (!$coach) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Coach not found',
+            'redirect_url' => url('/404') // Explicit 404 redirect
+        ], 404);
+    }
+
+    $user = User::find($coach->created_by);
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found',
+            'redirect_url' => url('/404')
+        ], 404);
+    }
+
+    // Step 2: Check if user already has a Stripe account
+    if (!$user->stripe_account_id) {
+        try {
+            $account = Account::create([
+                'type' => 'express',
+                'country' => 'US',
+                'email' => $user->email,
+                'capabilities' => [
+                    'card_payments' => ['requested' => true],
+                    'transfers' => ['requested' => true],
+                ],
+            ]);
+
+            $user->stripe_account_id = $account->id;
+            $user->save();
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Stripe account creation failed: ' . $e->getMessage(),
+                'redirect_url' => url('/error')
+            ], 500);
+        }
+    } else {
+        return response()->json([
+            'success' => true,
+            'message' => 'Stripe account already exists',
+            'already_exists' => true,
+            'redirect_url' => url('/allcoach')
+        ], 200);
+    }
+
+    // Step 3: Generate onboarding link with proper URLs
+    try {
+        $accountLink = AccountLink::create([
+            'account' => $user->stripe_account_id,
+            'refresh_url' => url('/stripe/refresh'), // Fully qualified URL
+           'return_url' => 'http://localhost:5173/allcoach',// Fully qualified URL
+            'type' => 'account_onboarding',
+        ]);
+
+        // Step 4: Return the onboarding URL
+        return response()->json([
+            'success' => true,
+            'url' => $accountLink->url,
+            'redirect_url' => $accountLink->url // Always include redirect_url
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to create account link: ' . $e->getMessage(),
+            'redirect_url' => url('/error')
+        ], 500);
+    }
+}
 
     // get coach Record that can show in About Page
 
